@@ -8,25 +8,39 @@ var fairBot = require('./fairbot');
 var io = require('socket.io')(server);
 var crypto = require("crypto");
 var ejs = require('ejs');
+var fs = require('fs');
 
+var defaultChannel = 'drfair';
 var userFile = 'users.json';
-var userData = jsonFile.readFileSync(userFile);
-var twitchApp = userData.app;
-var master = userData.master;
+var settingsFile = 'settings.json';
+
+var settingsData;
+if (fs.existsSync(settingsFile)) {
+    settingsData = jsonFile.readFileSync(settingsFile);
+} else {
+    console.log("Project missing " + settingsFile + " file.");
+    process.exit(1);
+}
+
+var twitchApp = settingsData.app;
+
 var users = [];
-
-var defaultChannel = "drfair";
 var currentChannel = defaultChannel;
-var port = 3000;
-// var hostName = 'http://madsapp.ddns.net:' + port;
-var hostName = 'http://localhost:' + port;
-var masterBot = fairBot.createBot(twitchApp, master, currentChannel);
+var port = settingsData.port;
+var hostName = settingsData.hostName + ':' + port;
+var authRoute = twitchApp.redirect_uri;
+twitchApp.redirect_uri = hostName + twitchApp.redirect_uri;
+var masterBot = fairBot.createBot(twitchApp, null, currentChannel);
 
-(function () {
-    for (var i = 0; i < userData.users.length; i++) {
-        addUser(userData.users[i].login, userData.users[i].token);
-    }
-})();
+if (fs.existsSync(userFile)) {
+    var userData = jsonFile.readFileSync(userFile);
+
+    (function () {
+        for (var i = 0; i < userData.length; i++) {
+            addUser(userData[i].login, userData[i].token);
+        }
+    })();
+}
 
 var uniqueState; // Not used correctly
 crypto.randomBytes(32, (err, buffer) => {
@@ -39,27 +53,20 @@ crypto.randomBytes(32, (err, buffer) => {
 });
 
 function saveUsers() {
-    var data = {
-        app: twitchApp,
-        master: {
-            login: master.login,
-            token: master.token
-        },
-        users: []
-    };
+    var data = [];
     for (var login in users) {
         var loginData = {
             login: users[login].login,
             token: users[login].token
         };
-        data.users.push(loginData);
+        data.push(loginData);
     }
-    data.users.sort((a,b ) => {
+    data.sort((a,b ) => {
         return a.login.localeCompare(b.login);
     });
     jsonFile.writeFile(userFile, data, {spaces: 2}, function (err) {
         if (err) {
-            console.log("Save users error:");
+            console.log("Save " + userFile + " error:");
             console.log(err);
         }
     })
@@ -96,7 +103,7 @@ app.get('/', function(req, res) {
     render(res, 'home', { users: data, currentChannel: currentChannel, authURL: authURL, msgTry: '<br> Examples:<br>My name is <%- bot %><br>Random number: <%- Math.floor(Math.random() * 100) %>' });
 });
 
-app.get('/twitchauth', function(req, res) {
+app.get(authRoute, function(req, res) {
     if (req.query["code"] && req.query["state"]) { // Twitch authorization code
         if (req.query["state"] == uniqueState) {
             masterBot.getAuthToken(req.query["code"], uniqueState, (json) => {

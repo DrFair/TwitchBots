@@ -6,7 +6,7 @@ var apiURL = "https://api.twitch.tv/kraken";
 var ircURL = "irc.chat.twitch.tv";
 var ircPort = 6667;
 
-var logErrors = true;
+var logErrors = false;
 
 exports.createBot = function(twitchApp, user, startChannel) {
     var headers = {

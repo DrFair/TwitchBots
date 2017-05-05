@@ -16,12 +16,12 @@ $(function() { // On ready
             update: function () {
                 var button = $("#bot-" + this.login);
                 if (!button.length) {
-                    $("#botslist").append('<button type="button" class="btn btn-default botselect" id="bot-'+ this.login + '">' + this.display_name + '</button>');
+                    $("#botslist").append('<a class="list-group-item text-center botselect" id="bot-'+ this.login + '">' + this.display_name + '</a>');
                 }
                 button.empty();
                 button.append(this.display_name);
                 if (this.selected) {
-                    button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 5px; top: 8px"></span>');
+                    button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 12px; top: 12px"></span>');
                 }
             }
         };
@@ -31,6 +31,7 @@ $(function() { // On ready
             users[user.login].selected = !users[user.login].selected;
             socket.emit('botselected', user.login);
             users[user.login].update();
+            return false; // Makes page not go to top
         });
     }
 

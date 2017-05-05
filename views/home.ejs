@@ -30,9 +30,9 @@
                 <div class="col-md-4">
                     <div class="col-md-12 controls">
                         <h4 class="text-center">Bots</h4>
-                        <div class="btn-group-vertical" role="group" aria-label="..." id="botslist" style="width: 100%">
+                        <div class="list-group" id="botslist" style="width: 100%">
                             <% for (var i = 0; i < users.length; i++) { %>
-                            <button type="button" class="btn btn-default botselect" id="bot-<%- users[i].login %>" data-login="<%- users[i].login %>" data-displayname="<%- users[i].display_name %>" data-selected="<%- users[i].selected ? 'y' : 'n' %>"><%- users[i].display_name %></button>
+                            <a href="#" class="list-group-item text-center botselect" id="bot-<%- users[i].login %>" data-login="<%- users[i].login %>" data-displayname="<%- users[i].display_name %>" data-selected="<%- users[i].selected ? 'y' : 'n' %>"><%- users[i].display_name %></a>
                             <% } %>
                         </div>
                         <button class="btn btn-default" style="width: 45%; margin-top: 5px;" id="checkbots">Check all</button>

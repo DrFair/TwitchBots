@@ -71,6 +71,13 @@
                         </form>
                         <p class="note text-center" style="margin-top: 10px;">Note: Use <a href="https://www.npmjs.com/package/ejs">EJS</a> with bot as data for custom messages!<%- msgTry %></p>
                     </div>
+                    <div class="col-md-12 controls">
+                        <h4 class="text-center">Bot mentions</h4>
+                        <button class="btn btn-default" id="clearmentions" style="width: 100%">Clear mentions</button>
+                        <p class="note text-center" style="margin: 5px">Mentions will appear below here</p>
+                        <ul id="mentions" style="list-style-type: none; margin: 10px 0 0 10px; padding: 0">
+                        </ul>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <div class="col-md-12 controls" style="height: 750px">

@@ -104,6 +104,14 @@ $(function() { // On ready
     $("#followchannel").click(function () {
         socket.emit("followchannel", "");
     });
+
+    function addMention(mention) {
+        $("#mentions").append('<li>" + mention + "</li>');
+    }
+
+    $("#clearmentions").click(function () {
+        $("#mentions").empty();
+    });
 });
 
 function formatNumber(n) {

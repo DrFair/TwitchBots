@@ -106,7 +106,7 @@ $(function() { // On ready
     });
 
     function addMention(mention) {
-        $("#mentions").append('<li>" + mention + "</li>');
+        $("#mentions").append('<li>' + mention + '</li>');
     }
 
     $("#clearmentions").click(function () {

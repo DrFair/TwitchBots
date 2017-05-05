@@ -32,6 +32,7 @@ var hostName = settingsData.hostName + ':' + port;
 var authRoute = twitchApp.redirect_uri;
 twitchApp.redirect_uri = hostName + twitchApp.redirect_uri;
 var masterBot = fairBot.createBot(twitchApp, null, currentChannel);
+var mentionListens = false;
 
 if (fs.existsSync(userFile)) {
     var userData = jsonFile.readFileSync(userFile);
@@ -147,6 +148,27 @@ function addUser(login, token) {
         display_name: user.display_name,
         selected: user.selected
     });
+    if (!mentionListens) {
+        user.bot.listenChat((user) => {
+            if (user.msg) {
+                var msg = user.msg;
+                var found = false;
+                for (var login in users) {
+                    var index = user.msg.toLowerCase().indexOf(login.toLowerCase());
+                    if (index !== -1) { // Found mention of login
+                        msg = msg.replace(new RegExp(login, 'ig'), '<b>' + user.msg.substr(index, login.length) + '</b>'); // Simple case insensitive replace all function
+                        found = true;
+                    }
+                }
+                if (found) {
+                    // Add user name
+                    msg = user.display_name + ': ' + msg;
+                    io.emit('mention', msg);
+                }
+            }
+        });
+        mentionListens = true;
+    }
 }
 
 // Socket.io communication

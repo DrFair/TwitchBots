@@ -108,9 +108,11 @@ $(function() { // On ready
     function addMention(mention) {
         $("#mentions").append('<li>' + mention + '</li>');
     }
-
     $("#clearmentions").click(function () {
         $("#mentions").empty();
+    });
+    socket.on('mention', function (message) {
+        addMention(message);
     });
 });
 

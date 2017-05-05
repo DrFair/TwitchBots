@@ -41,3 +41,19 @@ Here is an example of a complete **settings.json**:
 ```
 
 The application will create a **users.json** file (can be changed in index.js) which contains all the authorized accounts.
+
+## Predefined users.json
+
+If you already have Twitch usernames and authorization tokens, you can create your own **users.json** file which the application will load on start.
+
+The **users.json** is an array and must follow this template:
+
+```
+[
+  {
+    "login": "<Twitch login in lowercase>",
+    "token": "<Twith auth token for user>"
+  },
+  ...
+]
+```

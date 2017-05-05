@@ -17,6 +17,7 @@ var settingsFile = 'settings.json';
 var settingsData;
 if (fs.existsSync(settingsFile)) {
     settingsData = jsonFile.readFileSync(settingsFile);
+    if (settingsData.defaultChannel) defaultChannel = settingsData.defaultChannel;
 } else {
     console.log("Project missing " + settingsFile + " file.");
     process.exit(1);

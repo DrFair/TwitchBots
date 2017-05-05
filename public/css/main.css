@@ -1,0 +1,115 @@
+html {
+	position: relative;
+	min-height: 100%;
+}
+
+html, body {
+	background: #E2E2E2 !important;
+}
+
+.content {
+	margin: 0px 0px;
+	padding: 0px auto;
+}
+
+.btn-twitch,
+.btn-twitch:hover,
+.btn-twitch:focus,
+.btn-twitch.focus {
+	color: #fff !important;;
+	background-color: #6441a5;
+	border-color: #ccc;
+}
+
+.center-block {
+	float: none !important;
+}
+
+.space {
+	margin: 100px 0px;
+}
+
+.note {
+	color: #999;
+}
+
+.text-overflow {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 100%;
+	display: block;
+}
+
+.controls {
+	box-shadow: 0 0 5px #888;
+	padding-bottom: 10px;
+	margin-bottom: 15px;
+	padding-top: 5px;
+	background: #FFF;
+	border-radius: 10px;
+}
+
+.controls h4 {
+	padding-bottom: 9px;
+	border-bottom: 1px solid #E2E2E2;
+}
+
+.no-border {
+  border: 0px solid #ff0000 !important;
+}
+
+.header-note {
+	margin: -10px 0px 0px 0px;
+}
+
+.to-top {
+	color: #999;
+	margin: -18px -10px 0px 0px;
+	padding: 10px;
+}
+
+.img-preview {
+	margin: 10px 0px;
+}
+
+.navbar-bottom {
+	position: absolute !important;
+	bottom: 0;
+	width: 100%;
+	margin-bottom: 0px !important;
+}
+
+.dropdown-item {
+	min-width: 160px;
+	text-align: left;
+	display: block;
+	padding: 3px 20px;
+	clear: both;
+	font-weight: normal;
+	line-height: 1.42857143;
+	color: #333333;
+	white-space: nowrap;
+	border: none;
+	background: transparent;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+	text-decoration: none;
+	color: #262626;
+	background-color: #f5f5f5;
+}
+@media (max-width: 767px) {
+	.dropdown-item {
+		color: #777777;
+		position: static;
+		float: none;
+		width: auto;
+		padding: 5px 15px 5px 25px;
+	}
+	.dropdown-item:hover,
+	.dropdown-item:focus {
+		color: #333333;
+		background-color: transparent;
+	}
+}

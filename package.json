@@ -1,0 +1,17 @@
+{
+  "name": "twitchbots",
+  "version": "1.0.0",
+  "description": "Control bots on twitch chats",
+  "main": "index.js",
+  "author": "Mads Skovgaard <madsskovgaard@hotmail.com>",
+  "license": "",
+  "dependencies": {
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "irc": "^0.5.2",
+    "jsonfile": "^3.0.0",
+    "path": "^0.12.7",
+    "request": "^2.81.0",
+    "socket.io": "^1.7.3"
+  }
+}

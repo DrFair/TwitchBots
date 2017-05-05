@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <%- include("components/headerContent", { title: "Twitch Bots" }) %>
+    </head>
+    <body>
+        <nav class="nav navbar navbar-default">
+            <div class="container col-md-6 col-sm-8 center-block text-center">
+                <%- include("components/navbarHeader", { header: "Twitch Bots", imgSrc: null }) %>
+            </div>
+        </nav>
+        <div class="container content">
+
+            <div class="col-md-6 col-sm-8 center-block row" id="channel">
+                <h3 class="page-header text-center"><div class="text-center">404 Error</div><div class="to-top"><small><a href="#" class="pull-right to-top">To top</a></small></div></h3>
+                <p class="text-center">Looks like you got off track</p>
+                <p class="text-center"><a href="<%= hostName %>">Go back to home</a></p>
+            </div>
+        </div>
+
+        <%- include("components/footer") %>
+
+        <%- include("components/scripts") %>
+    </body>
+</html>

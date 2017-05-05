@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <%- include("components/headerContent", { title: "Twitch Bots" }) %>
+    </head>
+    <body>
+        <nav class="nav navbar navbar-default">
+            <div class="container col-md-6 col-sm-8 center-block text-center">
+                <%- include("components/navbarHeader", { header: "Twitch Bots", imgSrc: null }) %>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about">About</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+        <div class="container content">
+            <div class="row">
+                <h3 class="page-header text-center">Bots controls</h3>
+                <div class="col-md-8">
+                    <div class="col-md-6"><div class="col-md-12 controls">
+                        <h4 class="text-center">Bots</h4>
+                        <div class="btn-group-vertical" role="group" aria-label="..." id="botslist" style="width: 100%">
+                            <% for (var i = 0; i < users.length; i++) { %>
+                            <button type="button" class="btn btn-default botselect" id="bot-<%- users[i].login %>" data-login="<%- users[i].login %>" data-displayname="<%- users[i].display_name %>" data-selected="<%- users[i].selected ? 'y' : 'n' %>"><%- users[i].display_name %></button>
+                            <% } %>
+                        </div>
+                        <button class="btn btn-default" style="width: 45%; margin-top: 5px;" id="checkbots">Check all</button>
+                        <button class="btn btn-default pull-right" style="width: 45%; margin-top: 5px;" id="uncheckbots">Uncheck all</button>
+                    </div></div>
+                    <div class="col-md-6"><div class="col-md-12 controls">
+                        <h4 class="text-center">Settings</h4>
+                        <form class="form" id="channelform" action="">
+                            <div class="form-group">
+                                <label for="channelinput">Change channel</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">#</span>
+                                    <input type="text" class="form-control" id="channelinput" placeholder="twitch">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-default" style="width: 100%">Change</button>
+                        </form>
+                        <h4 class="text-center">Authorize new bot</h4>
+                        <a href="<%- authURL %>" class="btn btn-twitch" style="width: 100%">Login with Twitch</a>
+                    </div></div>
+                    <div class="col-md-6"><div class="col-md-12 controls">
+                        <h4 class="text-center">Send chat message</h4>
+                        <form class="form" id="messageform" action="" autocomplete="off">
+                            <div class="form-group">
+                                <textarea class="form-control" id="messageinput" form="messageform" placeholder="Message" style="width: 100%; max-width: 100%"></textarea>
+                                <!--<input type="text" class="form-control" id="messageinput" placeholder="Message">-->
+                            </div>
+                            <div class="form-group">
+                                <label for="messagerange">Randomly wait up to <span id="messagerangeoutput">0</span> seconds</label>
+                                <input type="range" class="form-control" id="messagerange" min="0" max="10" value="0" name="Test">
+                            </div>
+                            <button type="submit" class="btn btn-default" style="width: 100%">Send</button>
+                        </form>
+                        <p class="note text-center" style="margin-top: 10px;">Note: Use <a href="https://www.npmjs.com/package/ejs">EJS</a> with bot as data for custom messages!<%- msgTry %></p>
+                    </div></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="col-md-12 controls" style="height: 750px">
+                        <h4 class="text-center">Chat</h4>
+                        <p><b>Current channel: <span id="currentchannel"><%- currentChannel %></span></b></p>
+                        <button class="btn btn-default" id="followchannel" style="width: 100%; margin-bottom: 10px">Follow channel</button>
+                        <div id="currentchat"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <%- include("components/footer") %>
+
+        <%- include("components/scripts") %>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+        <script src="<%= hostName %>/js/home.js"></script>
+    </body>
+</html>

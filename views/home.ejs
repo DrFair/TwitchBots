@@ -26,8 +26,9 @@
         <div class="container content">
             <div class="row">
                 <h3 class="page-header text-center">Bots controls</h3>
-                <div class="col-md-8">
-                    <div class="col-md-6"><div class="col-md-12 controls">
+
+                <div class="col-md-4">
+                    <div class="col-md-12 controls">
                         <h4 class="text-center">Bots</h4>
                         <div class="btn-group-vertical" role="group" aria-label="..." id="botslist" style="width: 100%">
                             <% for (var i = 0; i < users.length; i++) { %>
@@ -36,8 +37,11 @@
                         </div>
                         <button class="btn btn-default" style="width: 45%; margin-top: 5px;" id="checkbots">Check all</button>
                         <button class="btn btn-default pull-right" style="width: 45%; margin-top: 5px;" id="uncheckbots">Uncheck all</button>
-                    </div></div>
-                    <div class="col-md-6"><div class="col-md-12 controls">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="col-md-12 controls">
                         <h4 class="text-center">Settings</h4>
                         <form class="form" id="channelform" action="">
                             <div class="form-group">
@@ -51,8 +55,8 @@
                         </form>
                         <h4 class="text-center">Authorize new bot</h4>
                         <a href="<%- authURL %>" class="btn btn-twitch" style="width: 100%">Login with Twitch</a>
-                    </div></div>
-                    <div class="col-md-6"><div class="col-md-12 controls">
+                    </div>
+                    <div class="col-md-12 controls">
                         <h4 class="text-center">Send chat message</h4>
                         <form class="form" id="messageform" action="" autocomplete="off">
                             <div class="form-group">
@@ -66,7 +70,7 @@
                             <button type="submit" class="btn btn-default" style="width: 100%">Send</button>
                         </form>
                         <p class="note text-center" style="margin-top: 10px;">Note: Use <a href="https://www.npmjs.com/package/ejs">EJS</a> with bot as data for custom messages!<%- msgTry %></p>
-                    </div></div>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <div class="col-md-12 controls" style="height: 750px">

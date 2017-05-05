@@ -8,7 +8,7 @@ var ircPort = 6667;
 
 var logErrors = false;
 
-exports.createBot = function(twitchApp, user, startChannel) {
+exports.createBot = function(twitchApp, user, channels) {
     var headers = {
         "Accept": "application/vnd.twitchtv.v5+json",
         "Client-ID": twitchApp.clientID
@@ -296,17 +296,24 @@ exports.createBot = function(twitchApp, user, startChannel) {
         bot.getChannelIDByName(user.login, (id) => {
             bot.userID = id;
         });
-        
-        if (!startChannel.charAt(0) !== "#") startChannel = "#" + startChannel;
 
-        bot.channels = [ startChannel ];
+        if (typeof(channels) == 'string') {
+            channels = [channels];
+        }
+        for (let i = 0; i < channels.length; i++) {
+            if (channels[i].charAt(0) !== "#") {
+                channels[i] = "#" + channels[i];
+            }
+        }
+
+        bot.channels = channels;
 
         bot.irc = new irc.Client(ircURL, user.login, {
             port: ircPort,
             password: "oauth:" + user.token,
             channels: bot.channels
         });
-        
+
         // Request all additional information/messages
         bot.irc.send("CAP REQ", "twitch.tv/membership");
         bot.irc.send("CAP REQ", "twitch.tv/tags");
@@ -376,40 +383,55 @@ exports.createBot = function(twitchApp, user, startChannel) {
             });
         };
 
-        // Callback is: channel, username, isPrime
-        bot.listenNewSub = function(callback) {
-            this.listenRaw((err, args, tags) => {
-                if (err) return;
-                if (args.length > 1) {
-                    const primeReg = /[^\s]+ just subscribed with Twitch Prime!/;
-                    const reg = /[^\s]+ just subscribed!/;
-                    if (args[1].match(primeReg)) {
-                        var username = args[1].split(" ")[0];
-                        callback(args[0], username, true);
-                    } else if (args[1].match(reg)) {
-                        var username = args[1].split(" ")[0];
-                        callback(args[0], username, false);
-                    }
+        // Callback is user, months, subTier (subTier is from twitch, can either be Prime, 1000, 2000 or 3000)
+        bot.listenSubs = function (callback) {
+            this.listenTwitchTag('USERNOTICE', (args, tags) => {
+                // console.log("TEST");
+                var user = parser.createUser(args, tags);
+                if (tags['msg-id'] == 'sub') {
+                    callback(user, 0, tags['msg-param-sub-plan']);
+                } else if (tags['msg-id'] == "resub") {
+                    callback(user, Number(tags['msg-param-months']), tags['msg-param-sub-plan']);
                 }
             });
         };
 
-        // Callback is: user, months, isPrime
-        bot.listenResub = function(callback) {
-            this.listenRaw((err, args, tags) => {
-                if (err) return;
-                if (tags["msg-id"] && tags["msg-id"] === "resub") {
-                    var user = parser.createUser(args, tags);
-                    var systemMsg = tags["system-msg"].replace(/\\s/g, " ");
-                    if (typeof(user.display_name) !== "string" || user.display_name.length === 0) { // Sometimes display_name is empty
-                        user.display_name = systemMsg.split(" ")[0]; // Get display name from system message.
-                    }
-                    const primeReg = /Twitch Prime/;
-                    var isPrime = systemMsg.match(primeReg) !== null;
-                    callback(user, Number(tags["msg-param-months"]), isPrime);
-                }
-            });
-        };
+        // Old listen sub functions
+
+        // // Callback is: channel, username, isPrime
+        // bot.listenNewSub = function(callback) {
+        //     this.listenRaw((err, args, tags) => {
+        //         if (err) return;
+        //         if (args.length > 1) {
+        //             const primeReg = /[^\s]+ just subscribed with Twitch Prime!/;
+        //             const reg = /[^\s]+ just subscribed!/;
+        //             if (args[1].match(primeReg)) {
+        //                 var username = args[1].split(" ")[0];
+        //                 callback(args[0], username, true);
+        //             } else if (args[1].match(reg)) {
+        //                 var username = args[1].split(" ")[0];
+        //                 callback(args[0], username, false);
+        //             }
+        //         }
+        //     });
+        // };
+        //
+        // // Callback is: user, months, isPrime
+        // bot.listenResub = function(callback) {
+        //     this.listenRaw((err, args, tags) => {
+        //         if (err) return;
+        //         if (tags["msg-id"] && tags["msg-id"] === "resub") {
+        //             var user = parser.createUser(args, tags);
+        //             var systemMsg = tags["system-msg"].replace(/\\s/g, " ");
+        //             if (typeof(user.display_name) !== "string" || user.display_name.length === 0) { // Sometimes display_name is empty
+        //                 user.display_name = systemMsg.split(" ")[0]; // Get display name from system message.
+        //             }
+        //             const primeReg = /Twitch Prime/;
+        //             var isPrime = systemMsg.match(primeReg) !== null;
+        //             callback(user, Number(tags["msg-param-months"]), isPrime);
+        //         }
+        //     });
+        // };
 
         // Callback is: user
         bot.listenChat = function(callback) {

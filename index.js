@@ -10,7 +10,7 @@ var crypto = require("crypto");
 var ejs = require('ejs');
 var fs = require('fs');
 
-var defaultChannel = 'drfair';
+var defaultChannel = 'twitch';
 var userFile = 'users.json';
 var settingsFile = 'settings.json';
 

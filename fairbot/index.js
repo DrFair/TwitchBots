@@ -6,14 +6,16 @@ var apiURL = "https://api.twitch.tv/kraken";
 var ircURL = "irc.chat.twitch.tv";
 var ircPort = 6667;
 
-var logErrors = false;
+var logErrors = true;
 
 exports.createBot = function(twitchApp, user, startChannel) {
     var headers = {
         "Accept": "application/vnd.twitchtv.v5+json",
-        "Client-ID": twitchApp.clientID,
-        "Authorization": "OAuth " + user.token
+        "Client-ID": twitchApp.clientID
     };
+    if (user) {
+        headers["Authorization"] = "OAuth " + user.token;
+    }
 
     var bot = {};
     bot.userID = null;
@@ -172,10 +174,6 @@ exports.createBot = function(twitchApp, user, startChannel) {
             callback(null);
         });
     };
-
-    bot.getChannelIDByName(user.login, (id) => {
-        bot.userID = id;
-    });
     
     bot.getChannelByName = function (channelName, callback) {
         this.request("/users?login=" + channelName, (err, json) => {
@@ -294,170 +292,176 @@ exports.createBot = function(twitchApp, user, startChannel) {
     };
 
     // Chat parts
-    if (!startChannel.charAt(0) !== "#") startChannel = "#" + startChannel;
-    
-    bot.channels = [ startChannel ];
+    if (user) {
+        bot.getChannelIDByName(user.login, (id) => {
+            bot.userID = id;
+        });
+        
+        if (!startChannel.charAt(0) !== "#") startChannel = "#" + startChannel;
 
-    bot.irc = new irc.Client(ircURL, user.login, {
-        port: ircPort,
-        password: "oauth:" + user.token,
-        channels: bot.channels
-    });
+        bot.channels = [ startChannel ];
 
-    // Request all additional information/messages
-    bot.irc.send("CAP REQ", "twitch.tv/membership");
-    bot.irc.send("CAP REQ", "twitch.tv/tags");
-    bot.irc.send("CAP REQ", "twitch.tv/commands");
+        bot.irc = new irc.Client(ircURL, user.login, {
+            port: ircPort,
+            password: "oauth:" + user.token,
+            channels: bot.channels
+        });
+        
+        // Request all additional information/messages
+        bot.irc.send("CAP REQ", "twitch.tv/membership");
+        bot.irc.send("CAP REQ", "twitch.tv/tags");
+        bot.irc.send("CAP REQ", "twitch.tv/commands");
 
-    bot.irc.addListener('error', (err) => {
-        if (logErrors) {
-            console.log("IRC error:");
-            console.log(err);
-        }
-    });
-
-    bot.isInChannel = function (channel) {
-        if (!channel.charAt(0) !== "#") channel = "#" + channel;
-        for (var i = 0; i < this.channels.length; i++) {
-            if (this.channels[i] === channel) return true;
-        }
-        return false;
-    };
-
-    bot.joinChannel = function (channel) {
-        if (!channel.charAt(0) !== "#") channel = "#" + channel;
-        if (!this.isInChannel(channel)) {
-            bot.irc.join(channel);
-        }
-    };
-
-    bot.leaveChannel = function (channel) {
-        if (!channel.charAt(0) !== "#") channel = "#" + channel;
-        for (var i = 0; i < this.channels.length; i++) {
-            if (this.channels[i] === channel) {
-                bot.irc.part(channel);
-                this.channels.splice(i, 1);
-                return;
-            }
-        }
-    };
-
-    // Callback is: error, args, tags
-    bot.listenRaw = function(callback) {
-        bot.irc.addListener('raw', (msg) => {
-            if (msg.commandType === 'normal') {
-                if (msg.command.charAt(0) === "@") {
-                    msg.command = msg.command.substring(1, msg.command.length);
-                }
-                var s = msg.command.split(';');
-                var tags = {};
-                for (var i = 0; i < s.length; i++) {
-                    var split = s[i].split("=");
-                    tags[split[0]] = split[1];
-                }
-                callback(null, msg.args, tags);
+        bot.irc.addListener('error', (err) => {
+            if (logErrors) {
+                console.log("IRC error:");
+                console.log(err);
             }
         });
-    };
 
-    // Callback is: args, tags
-    bot.listenTwitchTag = function(twitchTag, callback) {
-        this.listenRaw((err, args, tags) => {
-            if (err) return;
-            if (args) {
-                var argsSplit = args[0].split(" ");
-                if (argsSplit.length > 1 && argsSplit[1] === twitchTag) {
-                    callback(args, tags);
+        bot.isInChannel = function (channel) {
+            if (!channel.charAt(0) !== "#") channel = "#" + channel;
+            for (var i = 0; i < this.channels.length; i++) {
+                if (this.channels[i] === channel) return true;
+            }
+            return false;
+        };
+
+        bot.joinChannel = function (channel) {
+            if (!channel.charAt(0) !== "#") channel = "#" + channel;
+            if (!this.isInChannel(channel)) {
+                bot.irc.join(channel);
+            }
+        };
+
+        bot.leaveChannel = function (channel) {
+            if (!channel.charAt(0) !== "#") channel = "#" + channel;
+            for (var i = 0; i < this.channels.length; i++) {
+                if (this.channels[i] === channel) {
+                    bot.irc.part(channel);
+                    this.channels.splice(i, 1);
+                    return;
                 }
             }
-        });
-    };
+        };
 
-    // Callback is: channel, username, isPrime
-    bot.listenNewSub = function(callback) {
-        this.listenRaw((err, args, tags) => {
-            if (err) return;
-            if (args.length > 1) {
-                const primeReg = /[^\s]+ just subscribed with Twitch Prime!/;
-                const reg = /[^\s]+ just subscribed!/;
-                if (args[1].match(primeReg)) {
-                    var username = args[1].split(" ")[0];
-                    callback(args[0], username, true);
-                } else if (args[1].match(reg)) {
-                    var username = args[1].split(" ")[0];
-                    callback(args[0], username, false);
+        // Callback is: error, args, tags
+        bot.listenRaw = function(callback) {
+            bot.irc.addListener('raw', (msg) => {
+                if (msg.commandType === 'normal') {
+                    if (msg.command.charAt(0) === "@") {
+                        msg.command = msg.command.substring(1, msg.command.length);
+                    }
+                    var s = msg.command.split(';');
+                    var tags = {};
+                    for (var i = 0; i < s.length; i++) {
+                        var split = s[i].split("=");
+                        tags[split[0]] = split[1];
+                    }
+                    callback(null, msg.args, tags);
                 }
-            }
-        });
-    };
+            });
+        };
 
-    // Callback is: user, months, isPrime
-    bot.listenResub = function(callback) {
-        this.listenRaw((err, args, tags) => {
-            if (err) return;
-            if (tags["msg-id"] && tags["msg-id"] === "resub") {
+        // Callback is: args, tags
+        bot.listenTwitchTag = function(twitchTag, callback) {
+            this.listenRaw((err, args, tags) => {
+                if (err) return;
+                if (args) {
+                    var argsSplit = args[0].split(" ");
+                    if (argsSplit.length > 1 && argsSplit[1] === twitchTag) {
+                        callback(args, tags);
+                    }
+                }
+            });
+        };
+
+        // Callback is: channel, username, isPrime
+        bot.listenNewSub = function(callback) {
+            this.listenRaw((err, args, tags) => {
+                if (err) return;
+                if (args.length > 1) {
+                    const primeReg = /[^\s]+ just subscribed with Twitch Prime!/;
+                    const reg = /[^\s]+ just subscribed!/;
+                    if (args[1].match(primeReg)) {
+                        var username = args[1].split(" ")[0];
+                        callback(args[0], username, true);
+                    } else if (args[1].match(reg)) {
+                        var username = args[1].split(" ")[0];
+                        callback(args[0], username, false);
+                    }
+                }
+            });
+        };
+
+        // Callback is: user, months, isPrime
+        bot.listenResub = function(callback) {
+            this.listenRaw((err, args, tags) => {
+                if (err) return;
+                if (tags["msg-id"] && tags["msg-id"] === "resub") {
+                    var user = parser.createUser(args, tags);
+                    var systemMsg = tags["system-msg"].replace(/\\s/g, " ");
+                    if (typeof(user.display_name) !== "string" || user.display_name.length === 0) { // Sometimes display_name is empty
+                        user.display_name = systemMsg.split(" ")[0]; // Get display name from system message.
+                    }
+                    const primeReg = /Twitch Prime/;
+                    var isPrime = systemMsg.match(primeReg) !== null;
+                    callback(user, Number(tags["msg-param-months"]), isPrime);
+                }
+            });
+        };
+
+        // Callback is: user
+        bot.listenChat = function(callback) {
+            this.listenTwitchTag("PRIVMSG", (args, tags) => {
                 var user = parser.createUser(args, tags);
-                var systemMsg = tags["system-msg"].replace(/\\s/g, " ");
-                if (typeof(user.display_name) !== "string" || user.display_name.length === 0) { // Sometimes display_name is empty
-                    user.display_name = systemMsg.split(" ")[0]; // Get display name from system message.
+                callback(user);
+            });
+        };
+
+        // Callback is: user
+        bot.listenChatCommand = function(command, callback) {
+            this.listenChat((user) => {
+                if (user.msg.lastIndexOf(command, 0) === 0) { // Starts with command
+                    callback(user);
                 }
-                const primeReg = /Twitch Prime/;
-                var isPrime = systemMsg.match(primeReg) !== null;
-                callback(user, Number(tags["msg-param-months"]), isPrime);
-            }
-        });
-    };
+            });
+        };
 
-    // Callback is: user
-    bot.listenChat = function(callback) {
-        this.listenTwitchTag("PRIVMSG", (args, tags) => {
-            var user = parser.createUser(args, tags);
-            callback(user);
-        });
-    };
+        // Callback is: user
+        bot.listenChatMsg = function(msg, callback) {
+            this.listenChat((user) => {
+                if (user.msg.toLowerCase().indexOf(msg.toLowerCase()) !== -1) {
+                    callback(user);
+                }
+            });
+        };
 
-    // Callback is: user
-    bot.listenChatCommand = function(command, callback) {
-        this.listenChat((user) => {
-            if (user.msg.lastIndexOf(command, 0) === 0) { // Starts with command
+        // Callback is: user
+        bot.listenWhisper = function(callback) {
+            this.listenTwitchTag("WHISPER", (args, tags) => {
+                var user = parser.createUser(args, tags);
                 callback(user);
-            }
-        });
-    };
+            });
+        };
 
-    // Callback is: user
-    bot.listenChatMsg = function(msg, callback) {
-        this.listenChat((user) => {
-            if (user.msg.toLowerCase().indexOf(msg.toLowerCase()) !== -1) {
-                callback(user);
-            }
-        });
-    };
+        bot.msg = function(channel, message) {
+            if (!channel.charAt(0) !== "#") channel = "#" + channel;
+            this.irc.send("PRIVMSG " + channel, message)
+        };
 
-    // Callback is: user
-    bot.listenWhisper = function(callback) {
-        this.listenTwitchTag("WHISPER", (args, tags) => {
-            var user = parser.createUser(args, tags);
-            callback(user);
-        });
-    };
-
-    bot.msg = function(channel, message) {
-        if (!channel.charAt(0) !== "#") channel = "#" + channel;
-        this.irc.send("PRIVMSG " + channel, message)
-    };
-
-    // User has to be exact display name
-    bot.whisper = function(user, message) {
-        if (typeof(user) !== "string") {
-            user = user.display_name;
+        // User has to be exact display name
+        bot.whisper = function(user, message) {
             if (typeof(user) !== "string") {
-                console.log("Invalid user to whipser to.");
-                return;
+                user = user.display_name;
+                if (typeof(user) !== "string") {
+                    console.log("Invalid user to whipser to.");
+                    return;
+                }
             }
-        }
-        this.irc.send("PRIVMSG " + this.channels[0], "/w " + user + " " + message)
-    };
+            this.irc.send("PRIVMSG " + this.channels[0], "/w " + user + " " + message)
+        };
+    }
 
     return bot;
 };

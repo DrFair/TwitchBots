@@ -135,11 +135,28 @@ $(function() { // On ready
 
     function updateChat() {
         $("#currentchannel").html(currentChannel);
-        $("#currentchat").html('<iframe frameborder="0" scrolling="yes" id="' + currentChannel + '" src="http://www.twitch.tv/' + currentChannel + '/chat" height="600" width="100%"></iframe>')
+        // $("#currentchat").html('<iframe frameborder="0" scrolling="yes" id="' + currentChannel + '" src="http://www.twitch.tv/' + currentChannel + '/chat" height="600" width="100%"></iframe>')
     }
 
     $("#followchannel").click(function () {
         socket.emit("followchannel", "");
+    });
+    socket.on('followchannel', function (data) {
+        console.log(data);
+        var followButton = $('#followchannel');
+        followButton.prop('disabled', false);
+        var totalFollowed = 0;
+        var totalUsers = 0;
+        for (var i = 0; i < data.followed.length; i++) {
+            var login = data.followed[i].login;
+            if (users[login]) {
+                users[login].followed = data.followed[i].followed;
+                totalUsers++;
+                if (users[login].followed > 0) totalFollowed++;
+                users[login].update();
+            }
+        }
+        if (totalFollowed == totalUsers) $('#followchannel').prop('disabled', true);
     });
 
     function addMention(mention) {

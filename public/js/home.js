@@ -11,9 +11,16 @@ $(function() { // On ready
         data.bots.sort((a,b ) => {
             return a.display_name.localeCompare(b.display_name);
         });
+        var followButton = $('#followchannel');
+        followButton.prop('disabled', false);
+        var totalFollowed = 0;
+        var totalUsers = 0;
         for (var i = 0; i < data.bots.length; i++) {
             createUser(data.bots[i]);
+            totalUsers++;
+            if (data.bots[i].followed > 0) totalFollowed++;
         }
+        if (totalFollowed == totalUsers) followButton.prop('disabled', true);
         updateChat();
     });
 
@@ -100,13 +107,20 @@ $(function() { // On ready
     });
     socket.on('setchannel', function (data) {
         currentChannel = data.channel;
+        var followButton = $('#followchannel');
+        followButton.prop('disabled', false);
+        var totalFollowed = 0;
+        var totalUsers = 0;
         for (var i = 0; i < data.followed.length; i++) {
             var login = data.followed[i].login;
             if (users[login]) {
                 users[login].followed = data.followed[i].followed;
+                totalUsers++;
+                if (users[login].followed > 0) totalFollowed++;
                 users[login].update();
             }
         }
+        if (totalFollowed == users.length) $('#followchannel').prop('disabled', true);
         updateChat();
     });
 

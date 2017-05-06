@@ -4,33 +4,34 @@ var currentChannel;
 $(function() { // On ready
     var socket = io();
 
-    var currentChannel = $("#currentchannel").text();
-
-    $(".botselect").each(function() {
-        var button = $(this);
-        createUser(button.data("login"), button.data("displayname"), button.data("selected") == "y");
+    $.getJSON(apiURL + '/summary', function (data) {
+        currentChannel = data.channel;
+        users = [];
+        $("#botslist").empty();
+        data.bots.sort((a,b ) => {
+            return a.display_name.localeCompare(b.display_name);
+        });
+        for (var i = 0; i < data.bots.length; i++) {
+            createUser(data.bots[i]);
+        }
+        updateChat();
     });
 
-    function createUser(login, displayName, selected) {
-        var user = {
-            login: login,
-            selected: selected,
-            display_name: displayName,
-            // followed: new Date().getTime() - 1337 * 9000, // Test
-            followed: 0,
-            update: function () {
-                var button = $("#bot-" + this.login);
-                if (!button.length) {
-                    $("#botslist").append('<a class="list-group-item text-center botselect" id="bot-'+ this.login + '">' + this.display_name + '</a>');
-                }
-                button.empty();
-                button.append(this.display_name);
-                if (this.selected) {
-                    button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>');
-                }
-                if (this.followed > 0) {
-                    button.append('<span class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px" title="Following ' + currentChannel + ' for ' + formatTime(new Date(Date.now() - this.followed)) + '"></span>');
-                }
+    function createUser(user) {
+        if (user == undefined) return;
+        user.update = function () {
+            var button = $("#bot-" + this.login);
+            if (!button.length) {
+                $("#botslist").append('<a class="list-group-item text-center botselect" id="bot-'+ this.login + '">' + this.display_name + '</a>');
+                button = $("#bot-" + this.login);
+            }
+            button.empty();
+            button.append(this.display_name);
+            if (this.selected) {
+                button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>');
+            }
+            if (this.followed >= 0) {
+                button.append('<span class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px" title="Following ' + currentChannel + ' for ' + formatTime(new Date(Date.now() - this.followed)) + '"></span>');
             }
         };
         users[user.login] = user;
@@ -91,8 +92,8 @@ $(function() { // On ready
         return false;
     });
     socket.on('setchannel', function (channel) {
-        $("#currentchannel").html(channel);
-        updateChat(channel);
+        currentChannel = channel;
+        updateChat();
     });
 
     socket.on('addbot', function (bot) {
@@ -104,10 +105,9 @@ $(function() { // On ready
         $("#messagerangeoutput").text(value);
     });
 
-    function updateChat(channel) {
-        $("#currentchat").html('<iframe frameborder="0" scrolling="yes" id="' + channel + '" src="http://www.twitch.tv/' + channel + '/chat" height="600" width="100%"></iframe>')
+    function updateChat() {
+        $("#currentchat").html('<iframe frameborder="0" scrolling="yes" id="' + currentChannel + '" src="http://www.twitch.tv/' + currentChannel + '/chat" height="600" width="100%"></iframe>')
     }
-    updateChat(currentChannel);
 
     $("#followchannel").click(function () {
         socket.emit("followchannel", "");

@@ -31,9 +31,7 @@
                     <div class="col-md-12 controls">
                         <h4 class="text-center">Bots</h4>
                         <div class="list-group" id="botslist" style="width: 100%">
-                            <% for (var i = 0; i < users.length; i++) { %>
-                            <a href="#" class="list-group-item text-center botselect" id="bot-<%- users[i].login %>" data-login="<%- users[i].login %>" data-displayname="<%- users[i].display_name %>" data-selected="<%- users[i].selected ? 'y' : 'n' %>"><%- users[i].display_name %></a>
-                            <% } %>
+                            <!-- Client will generate content here from api -->
                         </div>
                         <button class="btn btn-default" style="width: 45%; margin-top: 5px;" id="checkbots">Check all</button>
                         <button class="btn btn-default pull-right" style="width: 45%; margin-top: 5px;" id="uncheckbots">Uncheck all</button>
@@ -81,7 +79,7 @@
                 <div class="col-md-4">
                     <div class="col-md-12 controls" style="height: 750px">
                         <h4 class="text-center">Chat</h4>
-                        <p><b>Current channel: <span id="currentchannel"><%- currentChannel %></span></b></p>
+                        <p><b>Current channel: <span id="currentchannel"></span></b></p>
                         <button class="btn btn-default" id="followchannel" style="width: 100%; margin-bottom: 10px">Follow channel</button>
                         <div id="currentchat"></div>
                     </div>
@@ -93,6 +91,10 @@
         <%- include("components/footer") %>
 
         <%- include("components/scripts") %>
+
+        <script type="text/javascript">
+            var apiURL = "<%- hostName + "/api" %>";
+        </script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
         <script src="<%= hostName %>/js/home.js"></script>

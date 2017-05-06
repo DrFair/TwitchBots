@@ -102,7 +102,7 @@ app.get('/', function(req, res) {
         "&redirect_uri=" + twitchApp.redirect_uri +
         "&scope=" + scopes +
         "&state=" + uniqueState;
-    render(res, 'home', { users: data, currentChannel: currentChannel, authURL: authURL, msgTry: '<br> Examples:<br>My name is <%- bot %><br>Random number: <%- Math.floor(Math.random() * 100) %>' });
+    render(res, 'home', { authURL: authURL, msgTry: '<br> Examples:<br>My name is <%- bot %><br>Random number: <%- Math.floor(Math.random() * 100) %>' });
 });
 
 app.get(authRoute, function(req, res) {
@@ -122,6 +122,29 @@ app.get(authRoute, function(req, res) {
         }
     }
     res.redirect('/'); // Redirect to home page
+});
+
+app.get('/api/summary', function (req, res) {
+    var data = {
+        channel: currentChannel,
+        bots: []
+    };
+    for (var login in users) {
+        var followed = -1;
+        for (var i = 0; i < users[login].followed.length; i++) {
+            if (users[login].followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
+                followed = Date.now() - users[login].followed[i].since.getTime();
+                break;
+            }
+        }
+        data.bots.push({
+            login: users[login].login,
+            display_name: users[login].display_name,
+            selected: users[login].selected,
+            followed: followed
+        });
+    }
+    res.json(data); // Send json data
 });
 
 function render(res, view, data) {
@@ -148,7 +171,7 @@ function addUser(login, token) {
                 for (var i = 0; i < followed.length; i++) {
                     users[login].followed.push({
                         name: followed[i].channel.name,
-                        since: followed[i].created_at
+                        since: new Date(followed[i].created_at)
                     });
                 }
             })

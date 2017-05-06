@@ -63,9 +63,6 @@ function saveUsers() {
         };
         data.push(loginData);
     }
-    data.sort((a,b ) => {
-        return a.login.localeCompare(b.login);
-    });
     jsonFile.writeFile(userFile, data, {spaces: 2}, function (err) {
         if (err) {
             console.log("Save " + userFile + " error:");

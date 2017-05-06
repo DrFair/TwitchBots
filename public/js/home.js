@@ -1,7 +1,10 @@
 var users = [];
+var currentChannel;
 
 $(function() { // On ready
     var socket = io();
+
+    var currentChannel = $("#currentchannel").text();
 
     $(".botselect").each(function() {
         var button = $(this);
@@ -13,6 +16,8 @@ $(function() { // On ready
             login: login,
             selected: selected,
             display_name: displayName,
+            // followed: new Date().getTime() - 1337 * 9000, // Test
+            followed: 0,
             update: function () {
                 var button = $("#bot-" + this.login);
                 if (!button.length) {
@@ -21,7 +26,10 @@ $(function() { // On ready
                 button.empty();
                 button.append(this.display_name);
                 if (this.selected) {
-                    button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 12px; top: 12px"></span>');
+                    button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>');
+                }
+                if (this.followed > 0) {
+                    button.append('<span class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px" title="Following ' + currentChannel + ' for ' + formatTime(new Date(Date.now() - this.followed)) + '"></span>');
                 }
             }
         };
@@ -99,7 +107,7 @@ $(function() { // On ready
     function updateChat(channel) {
         $("#currentchat").html('<iframe frameborder="0" scrolling="yes" id="' + channel + '" src="http://www.twitch.tv/' + channel + '/chat" height="600" width="100%"></iframe>')
     }
-    updateChat($("#currentchannel").text());
+    updateChat(currentChannel);
 
     $("#followchannel").click(function () {
         socket.emit("followchannel", "");

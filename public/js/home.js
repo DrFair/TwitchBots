@@ -30,7 +30,13 @@ $(function() { // On ready
                 button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>');
             }
             if (this.followed >= 0) {
-                button.append('<span class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px" title="Following ' + currentChannel + ' for ' + formatTime(new Date(this.followed)) + '"></span>');
+                button.append('<span id="followed-' + this.login + '" data-login="' + this.login + '" data-toggle="tooltip" data-placement="top" class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px"></span>');
+                $('#followed-' + this.login).tooltip({
+                    title: function () {
+                        var login = $(this).data('login');
+                        return 'Following ' + currentChannel + ' for ' + formatTime(new Date(Date.now() - users[login].followed));
+                    }
+                });
             }
         };
         users[user.login] = user;

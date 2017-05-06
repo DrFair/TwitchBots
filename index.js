@@ -136,7 +136,7 @@ function getClientUser(user) {
     var followed = -1;
     for (var i = 0; i < user.followed.length; i++) {
         if (user.followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
-            followed = Date.now() - user.followed[i].since.getTime();
+            followed = user.followed[i].since.getTime();
             break;
         }
     }

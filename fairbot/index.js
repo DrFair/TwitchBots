@@ -137,7 +137,7 @@ exports.createBot = function(twitchApp, user, channels) {
             callback(json);
         }, auth);
     };
-    
+
     bot.getAuthSummary = function (callback) {
         this.request("/", (err, json) => {
             if (err) {
@@ -174,7 +174,7 @@ exports.createBot = function(twitchApp, user, channels) {
             callback(null);
         });
     };
-    
+
     bot.getChannelByName = function (channelName, callback) {
         this.request("/users?login=" + channelName, (err, json) => {
             if (err) {
@@ -291,11 +291,84 @@ exports.createBot = function(twitchApp, user, channels) {
         });
     };
 
+    bot.getChannelStream = function(channelID, callback) {
+        this.request("/streams/" + channelID, (err, json) => {
+            if (err) {
+                console.log("Error getting channel stream:");
+                console.log(err);
+                callback(null);
+                return;
+            }
+            if (json.stream) {
+                callback(json.stream);
+            } else {
+                callback(null);
+            }
+        });
+    };
+
+    bot.followChannel = function (channel) {
+        if (this.userID == null) {
+            console.log("Follow channel error:");
+            console.log("User id not defined");
+            return
+        }
+        this.getChannelIDByName(channel, (channelID) => {
+            if (channelID != null) {
+                this.put("/users/" + this.userID + "/follows/channels/" + channelID, (err) => {
+                    if (err) {
+                        console.log("Error following channel " + channel + ":");
+                        console.log(err);
+                    }
+                });
+            }
+        });
+    };
+
+    // Callback: array of follows
+    bot.getFollowed = function (callback) {
+        if (this.userID == null) {
+            console.log("Get followed error:");
+            console.log("User id not defined");
+            return;
+        }
+        var limit = 100; // max 100
+        var offset = 0;
+        var out = [];
+
+        request(callback);
+
+        function request(callback) {
+            bot.request("/users/" + bot.userID + "/follows/channels?limit=" + limit + "&offset=" + offset, (err, json) => {
+                if (err) {
+                    console.log("Get followed error:");
+                    console.log(err);
+                    return;
+                }
+                var done = json["_total"] <= limit + offset;
+                for (let i = 0; i < json.follows.length; i++) {
+                    out.push(json.follows[i]);
+                }
+                offset += limit;
+                if (!done) {
+                    request(callback);
+                } else {
+                    callback(out);
+                }
+            });
+        }
+    };
+
     // Chat parts
     if (user) {
         bot.getChannelIDByName(user.login, (id) => {
             bot.userID = id;
+            bot.onUserID();
         });
+
+        // Happens when user id has been defined, can be overridden
+        bot.onUserID = function () {
+        };
 
         if (typeof(channels) == 'string') {
             channels = [channels];
@@ -353,7 +426,7 @@ exports.createBot = function(twitchApp, user, channels) {
         };
 
         // Callback is: error, args, tags
-        bot.listenRaw = function(callback) {
+        bot.listenRaw = function (callback) {
             bot.irc.addListener('raw', (msg) => {
                 if (msg.commandType === 'normal') {
                     if (msg.command.charAt(0) === "@") {
@@ -371,7 +444,7 @@ exports.createBot = function(twitchApp, user, channels) {
         };
 
         // Callback is: args, tags
-        bot.listenTwitchTag = function(twitchTag, callback) {
+        bot.listenTwitchTag = function (twitchTag, callback) {
             this.listenRaw((err, args, tags) => {
                 if (err) return;
                 if (args) {
@@ -434,7 +507,7 @@ exports.createBot = function(twitchApp, user, channels) {
         // };
 
         // Callback is: user
-        bot.listenChat = function(callback) {
+        bot.listenChat = function (callback) {
             this.listenTwitchTag("PRIVMSG", (args, tags) => {
                 var user = parser.createUser(args, tags);
                 callback(user);
@@ -442,7 +515,7 @@ exports.createBot = function(twitchApp, user, channels) {
         };
 
         // Callback is: user
-        bot.listenChatCommand = function(command, callback) {
+        bot.listenChatCommand = function (command, callback) {
             this.listenChat((user) => {
                 if (user.msg.lastIndexOf(command, 0) === 0) { // Starts with command
                     callback(user);
@@ -451,7 +524,7 @@ exports.createBot = function(twitchApp, user, channels) {
         };
 
         // Callback is: user
-        bot.listenChatMsg = function(msg, callback) {
+        bot.listenChatMsg = function (msg, callback) {
             this.listenChat((user) => {
                 if (user.msg.toLowerCase().indexOf(msg.toLowerCase()) !== -1) {
                     callback(user);
@@ -460,20 +533,20 @@ exports.createBot = function(twitchApp, user, channels) {
         };
 
         // Callback is: user
-        bot.listenWhisper = function(callback) {
+        bot.listenWhisper = function (callback) {
             this.listenTwitchTag("WHISPER", (args, tags) => {
                 var user = parser.createUser(args, tags);
                 callback(user);
             });
         };
 
-        bot.msg = function(channel, message) {
+        bot.msg = function (channel, message) {
             if (!channel.charAt(0) !== "#") channel = "#" + channel;
             this.irc.send("PRIVMSG " + channel, message)
         };
 
         // User has to be exact display name
-        bot.whisper = function(user, message) {
+        bot.whisper = function (user, message) {
             if (typeof(user) !== "string") {
                 user = user.display_name;
                 if (typeof(user) !== "string") {

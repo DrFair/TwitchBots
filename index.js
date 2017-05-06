@@ -134,15 +134,26 @@ function addUser(login, token) {
         login: login,
         display_name: login,
         token: token,
+        followed: [],
         selected: false
     };
     user.bot = fairBot.createBot(twitchApp, user, currentChannel);
+    users[user.login] = user;
     (function (login) {
         masterBot.getChannelByName(login, (channel) => {
             users[login].display_name = channel.display_name;
         });
+        users[login].bot.onUserID = function () {
+            users[login].bot.getFollowed((followed) => {
+                for (var i = 0; i < followed.length; i++) {
+                    users[login].followed.push({
+                        name: followed[i].channel.name,
+                        since: followed[i].created_at
+                    });
+                }
+            })
+        };
     })(login);
-    users[user.login] = user;
     io.emit('addbot', { // Update current connected clients
         login: user.login,
         display_name: user.display_name,

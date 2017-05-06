@@ -250,12 +250,18 @@ io.on('connection', function(socket) {
     socket.on('setchannel', function (channel) {
         if (channel.length == 0) return;
         if (channel == currentChannel) return;
+        currentChannel = channel;
+        var followed = [];
         for (var login in users) {
             users[login].bot.leaveChannel(currentChannel);
             users[login].bot.joinChannel(channel);
+            var clientUser = getClientUser(users[login]);
+            followed.push({
+                login: clientUser.login,
+                followed: clientUser.followed
+            });
         }
-        currentChannel = channel;
-        io.emit('setchannel', currentChannel);
+        io.emit('setchannel', { channel: currentChannel, followed: followed });
     });
     socket.on('followchannel', function () {
         for (var login in users) {

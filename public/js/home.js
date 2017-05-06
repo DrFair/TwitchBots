@@ -18,7 +18,6 @@ $(function() { // On ready
     });
 
     function createUser(user) {
-        if (user == undefined) return;
         user.update = function () {
             var button = $("#bot-" + this.login);
             if (!button.length) {
@@ -93,8 +92,15 @@ $(function() { // On ready
         channelInput.val(''); // Empty value
         return false;
     });
-    socket.on('setchannel', function (channel) {
-        currentChannel = channel;
+    socket.on('setchannel', function (data) {
+        currentChannel = data.channel;
+        for (var i = 0; i < data.followed.length; i++) {
+            var login = data.followed[i].login;
+            if (users[login]) {
+                users[login].followed = data.followed[i].followed;
+                users[login].update();
+            }
+        }
         updateChat();
     });
 

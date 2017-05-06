@@ -120,7 +120,7 @@ $(function() { // On ready
                 users[login].update();
             }
         }
-        if (totalFollowed == users.length) $('#followchannel').prop('disabled', true);
+        if (totalFollowed == totalUsers) $('#followchannel').prop('disabled', true);
         updateChat();
     });
 

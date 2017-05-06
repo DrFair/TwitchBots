@@ -46,8 +46,10 @@ $(function() { // On ready
 
     socket.on('botselected', function (user) {
         var login = user.login;
-        users[login].selected = user.selected;
-        users[login].update();
+        if (users[login]) {
+            users[login].selected = user.selected;
+            users[login].update();
+        }
     });
 
     $("#checkbots").click(function () {
@@ -97,7 +99,7 @@ $(function() { // On ready
     });
 
     socket.on('addbot', function (bot) {
-        createUser(bot.login, bot.display_name, bot.selected);
+        createUser(bot);
     });
 
     $("#messagerange").on('change mousemove', function() {

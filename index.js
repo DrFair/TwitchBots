@@ -127,22 +127,27 @@ app.get('/api/summary', function (req, res) {
         bots: []
     };
     for (var login in users) {
-        var followed = -1;
-        for (var i = 0; i < users[login].followed.length; i++) {
-            if (users[login].followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
-                followed = Date.now() - users[login].followed[i].since.getTime();
-                break;
-            }
-        }
-        data.bots.push({
-            login: users[login].login,
-            display_name: users[login].display_name,
-            selected: users[login].selected,
-            followed: followed
-        });
+        data.bots.push(getClientUser(users[login]));
     }
     res.json(data); // Send json data
 });
+
+function getClientUser(user) {
+    var followed = -1;
+    for (var i = 0; i < user.followed.length; i++) {
+        if (user.followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
+            followed = Date.now() - user.followed[i].since.getTime();
+            break;
+        }
+    }
+    return {
+        login: user.login,
+        display_name: user.display_name,
+        selected: user.selected,
+        followed: followed
+    };
+
+}
 
 function render(res, view, data) {
     data.hostName = hostName;
@@ -174,11 +179,7 @@ function addUser(login, token) {
             })
         };
     })(login);
-    io.emit('addbot', { // Update current connected clients
-        login: user.login,
-        display_name: user.display_name,
-        selected: user.selected
-    });
+    io.emit('addbot', getClientUser(user)); // Update current connected clients
     if (!mentionListens) {
         user.bot.listenChat((user) => {
             if (user.msg) {

@@ -4,7 +4,7 @@ var express = require("express");
 var app = express();
 var http = require('http');
 var server = http.Server(app);
-var fairBot = require('./fairbot');
+var fairTwitch = require('fair-twitch');
 var io = require('socket.io')(server);
 var crypto = require("crypto");
 var ejs = require('ejs');
@@ -31,7 +31,7 @@ var port = settingsData.port;
 var hostName = settingsData.hostName + ':' + port;
 var authRoute = twitchApp.redirect_uri;
 twitchApp.redirect_uri = hostName + twitchApp.redirect_uri;
-var masterBot = fairBot.createBot(twitchApp, null, currentChannel);
+var masterBot = new fairTwitch.TwitchClient(twitchApp);
 var mentionListens = false;
 
 if (fs.existsSync(userFile)) {
@@ -105,14 +105,24 @@ app.get('/', function(req, res) {
 app.get(authRoute, function(req, res) {
     if (req.query["code"] && req.query["state"]) { // Twitch authorization code
         if (req.query["state"] == uniqueState) {
-            masterBot.getAuthToken(req.query["code"], uniqueState, (json) => {
-                masterBot.getOtherAuthSummary(json.access_token, (summary) => {
-                    if (summary.token.user_name) {
-                        addUser(summary.token.user_name, json.access_token);
-                        saveUsers();
-                        console.log("Added user: " + summary.token.user_name + " with token: " + json.access_token);
-                    }
-                });
+            masterBot.getAuthToken(req.query["code"], uniqueState, (err, data) => {
+                if (err) {
+                    console.log('New Auth token error:');
+                    console.log(err);
+                } else {
+                    masterBot.getOtherAuthSummary(data.access_token, (err, summary) => {
+                        if (err) {
+                            console.log('Auth token error:');
+                            console.log(err);
+                        } else {
+                            if (summary.token.user_name) {
+                                addUser(summary.token.user_name, data.access_token);
+                                saveUsers();
+                                console.log("Added user: " + summary.token.user_name + " with token: " + data.access_token);
+                            }
+                        }
+                    });
+                }
             });
         } else {
             console.log("Got wrong unique state from Twitch auth process");
@@ -162,45 +172,63 @@ function addUser(login, token) {
         followed: [],
         selected: false
     };
-    user.bot = fairBot.createBot(twitchApp, user, currentChannel);
-    users[user.login] = user;
-    (function (login) {
-        masterBot.getChannelByName(login, (channel) => {
+    var clientOptions = {
+        clientID: twitchApp.clientID,
+        secret: twitchApp.seconds,
+        redirect_uri: twitchApp.redirect_uri,
+        token: token
+    };
+    user.bot = new fairTwitch.TwitchClient(clientOptions, currentChannel);
+    masterBot.getChannelByName(login, (err, channel) => {
+        if (err) {
+            console.log('Get channel by name error:');
+            console.log(err);
+        } else {
             users[login].display_name = channel.display_name;
+        }
+    });
+    user.bot.onChatReady(function () {
+        // console.log("TEST " + user.login);
+        user.bot.chat.onError(function (err) {
+            console.log(err);
         });
-        users[login].bot.onUserID = function () {
-            users[login].bot.getFollowed((followed) => {
+        if (!mentionListens) {
+            user.bot.chat.listen((user) => {
+                if (user.msg) {
+                    var msg = user.msg;
+                    var found = false;
+                    for (var login in users) {
+                        var index = user.msg.toLowerCase().indexOf(login.toLowerCase());
+                        if (index !== -1) { // Found mention of login
+                            msg = msg.replace(new RegExp(login, 'ig'), '<b>' + user.msg.substr(index, login.length) + '</b>'); // Simple case insensitive replace all function
+                            found = true;
+                        }
+                    }
+                    if (found) {
+                        // Add user name
+                        msg = user.display_name + ': ' + msg;
+                        io.emit('mention', msg);
+                    }
+                }
+            });
+            mentionListens = true;
+        }
+        user.bot.getFollowed((err, followed) => {
+            if (err) {
+                console.log('Get followed error:');
+                console.log(err);
+            } else {
                 for (var i = 0; i < followed.length; i++) {
-                    users[login].followed.push({
+                    users[user.login].followed.push({
                         name: followed[i].channel.name,
                         since: new Date(followed[i].created_at)
                     });
                 }
-            })
-        };
-    })(login);
-    io.emit('addbot', getClientUser(user)); // Update current connected clients
-    if (!mentionListens) {
-        user.bot.listenChat((user) => {
-            if (user.msg) {
-                var msg = user.msg;
-                var found = false;
-                for (var login in users) {
-                    var index = user.msg.toLowerCase().indexOf(login.toLowerCase());
-                    if (index !== -1) { // Found mention of login
-                        msg = msg.replace(new RegExp(login, 'ig'), '<b>' + user.msg.substr(index, login.length) + '</b>'); // Simple case insensitive replace all function
-                        found = true;
-                    }
-                }
-                if (found) {
-                    // Add user name
-                    msg = user.display_name + ': ' + msg;
-                    io.emit('mention', msg);
-                }
             }
-        });
-        mentionListens = true;
-    }
+        })
+    });
+    users[user.login] = user;
+    io.emit('addbot', getClientUser(user)); // Update current connected clients
 }
 
 // Socket.io communication
@@ -239,7 +267,7 @@ io.on('connection', function(socket) {
                     if (ejsMsg.length > 0) {
                         (function (bot, msg) {
                             setTimeout(function () {
-                                bot.msg(currentChannel, msg);
+                                bot.chat.msg(currentChannel, msg);
                             }, offset);
                         })(users[login].bot, ejsMsg);
                     }
@@ -253,8 +281,8 @@ io.on('connection', function(socket) {
         currentChannel = channel;
         var followed = [];
         for (var login in users) {
-            users[login].bot.leaveChannel(currentChannel);
-            users[login].bot.joinChannel(channel);
+            users[login].bot.chat.leaveChannel(currentChannel);
+            users[login].bot.chat.joinChannel(channel);
             var clientUser = getClientUser(users[login]);
             followed.push({
                 login: clientUser.login,

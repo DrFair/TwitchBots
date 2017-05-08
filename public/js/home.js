@@ -1,11 +1,13 @@
 var users = [];
 var currentChannel;
+var currentRoomState;
 
 $(function() { // On ready
     var socket = io();
 
     $.getJSON(apiURL + '/summary', function (data) {
         currentChannel = data.channel;
+        currentRoomState = data.roomState;
         users = [];
         $("#botslist").empty();
         data.bots.sort((a,b ) => {
@@ -15,6 +17,7 @@ $(function() { // On ready
             createUser(data.bots[i]);
         }
         updateFollowButton();
+        updateRoomState()
         updateChat();
     });
 
@@ -159,6 +162,29 @@ $(function() { // On ready
     });
     socket.on('mention', function (message) {
         addMention(message);
+    });
+
+    function updateRoomState() {
+        var html = "";
+        
+        if (Number(currentRoomState.emote_only) != 0) html += "Emote only<br>";
+        
+        var followers = Number(currentRoomState.followers_only);
+        if (followers == 0) html += "Followers only<br>";
+        else if (followers > 0) html += followers + "m followers only<br>";
+        
+        if (Number(currentRoomState.r9k) != 0) html += "r9k mode<br>";
+        
+        var slow = Number(currentRoomState.slow);
+        if (slow > 0) html += slow + "s slow mode<br>";
+
+        if (Number(currentRoomState.subs_only) != 0) html += "Sub only mode<br>";
+        
+        $("#roomstate").html(html);
+    }
+    socket.on('roomstate', function (state) {
+        currentRoomState = state;
+        updateRoomState();
     });
 });
 

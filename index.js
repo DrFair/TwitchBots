@@ -135,6 +135,7 @@ app.get(authRoute, function(req, res) {
 app.get('/api/summary', function (req, res) {
     var data = {
         channel: currentChannel,
+        roomState: currentRoomState,
         bots: []
     };
     for (var login in users) {

@@ -27,12 +27,13 @@ var twitchApp = settingsData.app;
 
 var users = [];
 var currentChannel = defaultChannel;
+var currentRoomState = {};
 var port = settingsData.port;
 var hostName = settingsData.hostName + ':' + port;
 var authRoute = twitchApp.redirect_uri;
 twitchApp.redirect_uri = hostName + twitchApp.redirect_uri;
 var masterBot = new fairTwitch.TwitchClient(twitchApp);
-var mentionListens = false;
+var listenersActive = false;
 
 if (fs.existsSync(userFile)) {
     var userData = jsonFile.readFileSync(userFile);
@@ -192,7 +193,7 @@ function addUser(login, token) {
         user.bot.chat.onError(function (err) {
             console.log(err);
         });
-        if (!mentionListens) {
+        if (!listenersActive) {
             user.bot.chat.listen((user) => {
                 if (user.msg) {
                     var msg = user.msg;
@@ -211,7 +212,15 @@ function addUser(login, token) {
                     }
                 }
             });
-            mentionListens = true;
+            user.bot.chat.onRoomChange(function (state) {
+                if (state.channel === currentChannel) {
+                    for (var i in state){ // Override room state indexes
+                        currentRoomState[i] = state[i];
+                    }
+                }
+                io.emit('roomstate', currentRoomState);
+            });
+            listenersActive = true;
         }
         user.bot.getFollowed((err, followed) => {
             if (err) {

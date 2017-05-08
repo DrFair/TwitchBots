@@ -23,25 +23,27 @@ $(function() { // On ready
 
     function createUser(user) {
         user.selected = false;
-        user.update = function () {
-            var button = $("#bot-" + this.login);
-            if (!button.length) {
-                $("#botslist").append('<a class="list-group-item text-center botselect" id="bot-'+ this.login + '">' + this.display_name + '</a>');
-                button = $("#bot-" + this.login);
+        $("#botslist").append('<a class="list-group-item text-center botselect" id="bot-'+ user.login + '">' +
+            user.display_name +
+            '<span class="glyphicon glyphicon-ok" id="selected-' + user.login + '" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>' + // Selected span
+            '<span id="followed-' + user.login + '" data-login="' + user.login + '" data-toggle="tooltip" data-placement="top" class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px"></span>' + // Following span
+            '</a>');
+        $('#followed-' + user.login).tooltip({
+            title: function () {
+                var login = $(this).data('login');
+                return 'Following ' + currentChannel + ' for ' + formatTime(new Date(Date.now() - users[login].followed));
             }
-            button.empty();
-            button.append(this.display_name);
+        });
+        user.update = function () {
             if (this.selected) {
-                button.append('<span class="glyphicon glyphicon-ok" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>');
+                $('#selected-' + this.login).show();
+            } else {
+                $('#selected-' + this.login).hide();
             }
             if (this.followed >= 0) {
-                button.append('<span id="followed-' + this.login + '" data-login="' + this.login + '" data-toggle="tooltip" data-placement="top" class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px"></span>');
-                $('#followed-' + this.login).tooltip({
-                    title: function () {
-                        var login = $(this).data('login');
-                        return 'Following ' + currentChannel + ' for ' + formatTime(new Date(Date.now() - users[login].followed));
-                    }
-                });
+                $('#followed-' + this.login).show();
+            } else {
+                $('#followed-' + this.login).hide();
             }
         };
         users[user.login] = user;

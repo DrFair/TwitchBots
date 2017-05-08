@@ -295,26 +295,33 @@ io.on('connection', function(socket) {
     socket.on('followchannel', function () {
         var data = { followed : [] }; // For some reason, socket.io has trouble just sending arrays
         for (var login in users) {
-            users[login].bot.followChannel(currentChannel);
-            var since = -1;
-            for (var i = 0; i < users[login].followed.length; i++) {
-                if (users[login].followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
-                    since = users[login].followed[i].since;
-                    break;
+            if (users[login].selected) {
+                (function (login) {
+                    users[login].bot.followChannel(currentChannel, function (err) {
+                        console.log(login + ' follow error:');
+                        console.log(err);
+                    });
+                })(login);
+                var since = -1;
+                for (var i = 0; i < users[login].followed.length; i++) {
+                    if (users[login].followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
+                        since = users[login].followed[i].since;
+                        break;
+                    }
                 }
+                if (since < 0) {
+                    since = Date.now();
+                    users[login].followed.push({
+                        name: currentChannel,
+                        since: new Date()
+                    });
+                }
+                var clientUser = getClientUser(users[login]);
+                data.followed.push({
+                    login: clientUser.login,
+                    followed: clientUser.followed
+                })
             }
-            if (since < 0) {
-                since = Date.now();
-                users[login].followed.push({
-                    name: currentChannel,
-                    since: new Date()
-                });
-            }
-            var clientUser = getClientUser(users[login]);
-            data.followed.push({
-                login: clientUser.login,
-                followed: clientUser.followed
-            })
         }
         io.emit('followchannel', data);
     });

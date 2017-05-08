@@ -155,7 +155,6 @@ function getClientUser(user) {
     return {
         login: user.login,
         display_name: user.display_name,
-        selected: user.selected,
         followed: followed
     };
 
@@ -171,8 +170,7 @@ function addUser(login, token) {
         login: login,
         display_name: login,
         token: token,
-        followed: [],
-        selected: false
+        followed: []
     };
     var clientOptions = {
         clientID: twitchApp.clientID,
@@ -244,44 +242,20 @@ function addUser(login, token) {
 // Socket.io communication
 io.on('connection', function(socket) {
     // console.log('Client connected');
-    socket.on('botselected', function(login) {
-        if (users[login]) {
-            users[login].selected = !users[login].selected;
-            io.emit('botselected', { // Cannot send entire object since it has password in it
-                login: users[login].login,
-                selected: users[login].selected
-            });
-        } else {
-            console.log("Client selected unknown users: " + login);
-        }
-    });
-    socket.on('checkbots', function () {
-        for (var login in users) {
-            users[login].selected = true;
-        }
-        io.emit('checkbots', {});
-    });
-    socket.on('uncheckbots', function () {
-        for (var login in users) {
-            users[login].selected = false;
-        }
-        io.emit('uncheckbots', {});
-    });
     socket.on('sendmessage', function (data) {
         if (data.msg) {
             data.seconds = Number(data.seconds);
             try {
-                for (var login in users) {
-                    if (users[login].selected) {
-                        var offset = data.seconds <= 0 ? 0 : Math.floor(Math.random() * data.seconds * 1000);
-                        var ejsMsg = ejs.render(data.msg, { bot: login }); // Render ejs
-                        if (ejsMsg.length > 0) {
-                            (function (bot, msg) {
-                                setTimeout(function () {
-                                    bot.chat.msg(currentChannel, msg);
-                                }, offset);
-                            })(users[login].bot, ejsMsg);
-                        }
+                for (var i = 0; i < data.users.length; i++) {
+                    var login = data.users[i];
+                    var offset = data.seconds <= 0 ? 0 : Math.floor(Math.random() * data.seconds * 1000);
+                    var ejsMsg = ejs.render(data.msg, { bot: login }); // Render ejs
+                    if (ejsMsg.length > 0) {
+                        (function (bot, msg) {
+                            setTimeout(function () {
+                                bot.chat.msg(currentChannel, msg);
+                            }, offset);
+                        })(users[login].bot, ejsMsg);
                     }
                 }
             } catch (err) {
@@ -307,38 +281,37 @@ io.on('connection', function(socket) {
         }
         io.emit('setchannel', { channel: currentChannel, followed: followed });
     });
-    socket.on('followchannel', function () {
-        var data = { followed : [] }; // For some reason, socket.io has trouble just sending arrays
-        for (var login in users) {
-            if (users[login].selected) {
-                (function (login) {
-                    users[login].bot.followChannel(currentChannel, function (err) {
-                        console.log(login + ' follow error:');
-                        console.log(err);
-                    });
-                })(login);
-                var since = -1;
-                for (var i = 0; i < users[login].followed.length; i++) {
-                    if (users[login].followed[i].name.toLowerCase() == currentChannel.toLowerCase()) {
-                        since = users[login].followed[i].since;
-                        break;
-                    }
+    socket.on('followchannel', function (data) {
+        var back = { followed : [] }; // For some reason, socket.io has trouble just sending arrays
+        for (var i = 0; i < data.users.length; i++) {
+            var login = data.users[i];
+            (function (login) {
+                users[login].bot.followChannel(currentChannel, function (err) {
+                    console.log(login + ' follow error:');
+                    console.log(err);
+                });
+            })(login);
+            var since = -1;
+            for (var j = 0; j < users[login].followed.length; j++) {
+                if (users[login].followed[j].name.toLowerCase() == currentChannel.toLowerCase()) {
+                    since = users[login].followed[j].since;
+                    break;
                 }
-                if (since < 0) {
-                    since = Date.now();
-                    users[login].followed.push({
-                        name: currentChannel,
-                        since: new Date()
-                    });
-                }
-                var clientUser = getClientUser(users[login]);
-                data.followed.push({
-                    login: clientUser.login,
-                    followed: clientUser.followed
-                })
             }
+            if (since < 0) {
+                since = Date.now();
+                users[login].followed.push({
+                    name: currentChannel,
+                    since: new Date()
+                });
+            }
+            var clientUser = getClientUser(users[login]);
+            back.followed.push({
+                login: clientUser.login,
+                followed: clientUser.followed
+            })
         }
-        io.emit('followchannel', data);
+        io.emit('followchannel', back);
     });
 });
 

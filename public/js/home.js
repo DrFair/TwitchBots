@@ -89,11 +89,15 @@ $(function() { // On ready
     });
 
     $('#messageform').submit(function(){
+        $("#messageerror").html(''); // Clear message error
         var messageInput = $("#messageinput");
         var seconds = Number($("#messagerange").val());
         socket.emit('sendmessage', { seconds: seconds, msg: messageInput.val() } );
         messageInput.val(''); // Empty value
         return false;
+    });
+    socket.on('messageerror', function (err) {
+        $("#messageerror").html(err);
     });
 
     $('#channelform').submit(function(){

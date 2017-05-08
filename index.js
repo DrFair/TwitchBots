@@ -278,10 +278,11 @@ io.on('connection', function(socket) {
     socket.on('setchannel', function (channel) {
         if (channel.length == 0) return;
         if (channel == currentChannel) return;
+        var oldChannel = currentChannel;
         currentChannel = channel;
         var followed = [];
         for (var login in users) {
-            users[login].bot.chat.leaveChannel(currentChannel);
+            users[login].bot.chat.leaveChannel(oldChannel);
             users[login].bot.chat.joinChannel(channel);
             var clientUser = getClientUser(users[login]);
             followed.push({

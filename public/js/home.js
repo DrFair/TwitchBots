@@ -92,7 +92,7 @@ $(function() { // On ready
         $("#messageerror").html(''); // Clear message error
         var messageInput = $("#messageinput");
         var seconds = Number($("#messagerange").val());
-        socket.emit('sendmessage', { seconds: seconds, msg: messageInput.val() } );
+        socket.emit('sendmessage', { seconds: seconds, msg: messageInput.val(), users: getSelectedUsers() } );
         messageInput.val(''); // Empty value
         return false;
     });
@@ -134,7 +134,7 @@ $(function() { // On ready
     }
 
     $("#followchannel").click(function () {
-        socket.emit("followchannel", "");
+        socket.emit("followchannel", { users: getSelectedUsers() } );
     });
     socket.on('followchannel', function (data) {
         for (var i = 0; i < data.followed.length; i++) {
@@ -190,6 +190,16 @@ $(function() { // On ready
         currentRoomState = state;
         updateRoomState();
     });
+
+    function getSelectedUsers() {
+        var out = [];
+        for (var i in users) {
+            if (users[i].selected) {
+                out.push(users[i].login);
+            }
+        }
+        return out;
+    }
 });
 
 function formatNumber(n) {

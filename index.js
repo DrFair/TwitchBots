@@ -187,7 +187,7 @@ function addUser(login, token) {
             users[login].display_name = channel.display_name;
         }
     });
-    user.bot.onChatReady(function () {
+    user.bot.onChatConnected(function () {
         // console.log("TEST " + user.login);
         user.bot.chat.onError(function (err) {
             console.log(err);

@@ -282,7 +282,7 @@ io.on('connection', function(socket) {
         currentChannel = channel;
         var followed = [];
         for (var login in users) {
-            users[login].bot.chat.leaveChannel(oldChannel);
+            if (users[login].bot.chat.isInChannel(oldChannel)) users[login].bot.chat.leaveChannel(oldChannel);
             users[login].bot.chat.joinChannel(channel);
             var clientUser = getClientUser(users[login]);
             followed.push({

@@ -17,11 +17,12 @@ $(function() { // On ready
             createUser(data.bots[i]);
         }
         updateFollowButton();
-        updateRoomState()
+        updateRoomState();
         updateChat();
     });
 
     function createUser(user) {
+        user.selected = false;
         user.update = function () {
             var button = $("#bot-" + this.login);
             if (!button.length) {
@@ -47,41 +48,19 @@ $(function() { // On ready
         user.update();
         $("#bot-" + user.login).click(function () {
             users[user.login].selected = !users[user.login].selected;
-            socket.emit('botselected', user.login);
             users[user.login].update();
             return false; // Makes page not go to top
         });
     }
 
-    socket.on('botselected', function (user) {
-        var login = user.login;
-        if (users[login]) {
-            users[login].selected = user.selected;
+    $("#checkbots").click(function () {
+        for (var login in users) {
+            users[login].selected = true;
             users[login].update();
         }
     });
 
-    $("#checkbots").click(function () {
-        socket.emit("checkbots", "");
-        for (var login in users) {
-            users[login].selected = true;
-            users[login].update();
-        }
-    });
-    socket.on('checkbots', function () {
-        for (var login in users) {
-            users[login].selected = true;
-            users[login].update();
-        }
-    });
     $("#uncheckbots").click(function () {
-        socket.emit("uncheckbots", "");
-        for (var login in users) {
-            users[login].selected = false;
-            users[login].update();
-        }
-    });
-    socket.on('uncheckbots', function () {
         for (var login in users) {
             users[login].selected = false;
             users[login].update();
@@ -96,6 +75,7 @@ $(function() { // On ready
         messageInput.val(''); // Empty value
         return false;
     });
+
     socket.on('messageerror', function (err) {
         $("#messageerror").html(err);
     });

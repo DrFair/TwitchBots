@@ -285,12 +285,6 @@ io.on('connection', function(socket) {
         var back = { followed : [] }; // For some reason, socket.io has trouble just sending arrays
         for (var i = 0; i < data.users.length; i++) {
             var login = data.users[i];
-            (function (login) {
-                users[login].bot.followChannel(currentChannel, function (err) {
-                    console.log(login + ' follow error:');
-                    console.log(err);
-                });
-            })(login);
             var since = -1;
             for (var j = 0; j < users[login].followed.length; j++) {
                 if (users[login].followed[j].name.toLowerCase() == currentChannel.toLowerCase()) {
@@ -299,6 +293,12 @@ io.on('connection', function(socket) {
                 }
             }
             if (since < 0) {
+                (function (login) {
+                    users[login].bot.followChannel(currentChannel, function (err) {
+                        console.log(login + ' follow error:');
+                        console.log(err);
+                    });
+                })(login);
                 since = Date.now();
                 users[login].followed.push({
                     name: currentChannel,

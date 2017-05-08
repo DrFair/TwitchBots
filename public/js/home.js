@@ -19,6 +19,7 @@ $(function() { // On ready
         updateFollowButton();
         updateRoomState();
         updateChat();
+        onSelectedChange();
     });
 
     function createUser(user) {
@@ -51,6 +52,7 @@ $(function() { // On ready
         $("#bot-" + user.login).click(function () {
             users[user.login].selected = !users[user.login].selected;
             users[user.login].update();
+            onSelectedChange();
             return false; // Makes page not go to top
         });
     }
@@ -60,6 +62,7 @@ $(function() { // On ready
             users[login].selected = true;
             users[login].update();
         }
+        onSelectedChange();
     });
 
     $("#uncheckbots").click(function () {
@@ -67,7 +70,29 @@ $(function() { // On ready
             users[login].selected = false;
             users[login].update();
         }
+        onSelectedChange();
     });
+
+    function onSelectedChange() {
+        // This is gonna update check all, uncheck all, follow and send message button.
+        var totalUsers = 0;
+        var selectedUsers = 0;
+        var unfollowed = 0;
+        for (var i in users) {
+            totalUsers++;
+            if (users[i].selected) {
+                selectedUsers++;
+                if (users[i].followed < 0) unfollowed++;
+            }
+        }
+
+        $("#uncheckbots").prop('disabled', selectedUsers == 0);
+        $("#checkbots").prop('disabled', selectedUsers == totalUsers);
+
+        $("#followchannel").prop('disabled', unfollowed == 0);
+        $("#messagesend").prop('disabled', selectedUsers == 0);
+
+    }
 
     $('#messageform').submit(function(){
         $("#messageerror").html(''); // Clear message error

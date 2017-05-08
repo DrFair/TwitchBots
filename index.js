@@ -270,18 +270,23 @@ io.on('connection', function(socket) {
     socket.on('sendmessage', function (data) {
         if (data.msg) {
             data.seconds = Number(data.seconds);
-            for (var login in users) {
-                if (users[login].selected) {
-                    var offset = data.seconds <= 0 ? 0 : Math.floor(Math.random() * data.seconds * 1000);
-                    var ejsMsg = ejs.render(data.msg, { bot: login }); // Render ejs
-                    if (ejsMsg.length > 0) {
-                        (function (bot, msg) {
-                            setTimeout(function () {
-                                bot.chat.msg(currentChannel, msg);
-                            }, offset);
-                        })(users[login].bot, ejsMsg);
+            try {
+                for (var login in users) {
+                    if (users[login].selected) {
+                        var offset = data.seconds <= 0 ? 0 : Math.floor(Math.random() * data.seconds * 1000);
+                        var ejsMsg = ejs.render(data.msg, { bot: login }); // Render ejs
+                        if (ejsMsg.length > 0) {
+                            (function (bot, msg) {
+                                setTimeout(function () {
+                                    bot.chat.msg(currentChannel, msg);
+                                }, offset);
+                            })(users[login].bot, ejsMsg);
+                        }
                     }
                 }
+            } catch (err) {
+                // Notify sender only
+                socket.emit('messageerror', err.message);
             }
         }
     });

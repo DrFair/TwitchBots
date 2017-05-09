@@ -9,7 +9,7 @@ $(function() { // On ready
         currentChannel = data.channel;
         currentRoomState = data.roomState;
         users = [];
-        $("#botslist").empty();
+        $('#botslist').empty();
         data.bots.sort((a,b ) => {
             return a.display_name.localeCompare(b.display_name);
         });
@@ -24,7 +24,7 @@ $(function() { // On ready
 
     function createUser(user) {
         user.selected = false;
-        $("#botslist").append('<a class="list-group-item text-center botselect" id="bot-'+ user.login + '">' +
+        $('#botslist').append('<a class="list-group-item text-center botselect" id="bot-'+ user.login + '">' +
             user.display_name +
             '<span class="glyphicon glyphicon-ok" id="selected-' + user.login + '" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>' + // Selected span
             '<span id="followed-' + user.login + '" data-login="' + user.login + '" data-toggle="tooltip" data-placement="top" class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px"></span>' + // Following span
@@ -49,7 +49,7 @@ $(function() { // On ready
         };
         users[user.login] = user;
         user.update();
-        $("#bot-" + user.login).click(function () {
+        $('#bot-' + user.login).click(function () {
             users[user.login].selected = !users[user.login].selected;
             users[user.login].update();
             onSelectedChange();
@@ -57,7 +57,7 @@ $(function() { // On ready
         });
     }
 
-    $("#checkbots").click(function () {
+    $('#checkbots').click(function () {
         for (var login in users) {
             users[login].selected = true;
             users[login].update();
@@ -65,7 +65,7 @@ $(function() { // On ready
         onSelectedChange();
     });
 
-    $("#uncheckbots").click(function () {
+    $('#uncheckbots').click(function () {
         for (var login in users) {
             users[login].selected = false;
             users[login].update();
@@ -86,29 +86,31 @@ $(function() { // On ready
             }
         }
 
-        $("#uncheckbots").prop('disabled', selectedUsers == 0);
-        $("#checkbots").prop('disabled', selectedUsers == totalUsers);
+        $('#uncheckbots').prop('disabled', selectedUsers == 0);
+        $('#checkbots').prop('disabled', selectedUsers == totalUsers);
 
-        $("#followchannel").prop('disabled', unfollowed == 0);
-        $("#messagesend").prop('disabled', selectedUsers == 0);
+        $('#followchannel').prop('disabled', unfollowed == 0);
+        $('#messagesend').prop('disabled', selectedUsers == 0);
+        
+        $('#totalbots').html(totalUsers);
 
     }
 
     $('#messageform').submit(function(){
-        $("#messageerror").html(''); // Clear message error
-        var messageInput = $("#messageinput");
-        var seconds = Number($("#messagerange").val());
+        $('#messageerror').html(''); // Clear message error
+        var messageInput = $('#messageinput');
+        var seconds = Number($('#messagerange').val());
         socket.emit('sendmessage', { seconds: seconds, msg: messageInput.val(), users: getSelectedUsers() } );
         messageInput.val(''); // Empty value
         return false;
     });
 
     socket.on('messageerror', function (err) {
-        $("#messageerror").html(err);
+        $('#messageerror').html(err);
     });
 
     $('#channelform').submit(function(){
-        var channelInput = $("#channelinput");
+        var channelInput = $('#channelinput');
         socket.emit('setchannel',channelInput.val());
         channelInput.val(''); // Empty value
         return false;
@@ -131,18 +133,18 @@ $(function() { // On ready
         onSelectedChange();
     });
 
-    $("#messagerange").on('change mousemove', function() {
+    $('#messagerange').on('change mousemove', function() {
         var value = $(this).val();
-        $("#messagerangeoutput").text(value);
+        $('#messagerangeoutput').text(value);
     });
 
     function updateChat() {
-        $("#currentchannel").html(currentChannel);
-        $("#currentchat").html('<iframe frameborder="0" scrolling="yes" id="' + currentChannel + '" src="http://www.twitch.tv/' + currentChannel + '/chat" height="680" width="100%"></iframe>')
+        $('#currentchannel').html(currentChannel);
+        $('#currentchat').html('<iframe frameborder="0" scrolling="yes" id="' + currentChannel + '" src="http://www.twitch.tv/' + currentChannel + '/chat" height="680" width="100%"></iframe>')
     }
 
-    $("#followchannel").click(function () {
-        socket.emit("followchannel", { users: getSelectedUsers() } );
+    $('#followchannel').click(function () {
+        socket.emit('followchannel', { users: getSelectedUsers() } );
     });
     socket.on('followchannel', function (data) {
         for (var i = 0; i < data.followed.length; i++) {
@@ -167,32 +169,32 @@ $(function() { // On ready
     }
 
     function addMention(mention) {
-        $("#mentions").append('<li>' + mention + '</li>');
+        $('#mentions').append('<li>' + mention + '</li>');
     }
-    $("#clearmentions").click(function () {
-        $("#mentions").empty();
+    $('#clearmentions').click(function () {
+        $('#mentions').empty();
     });
     socket.on('mention', function (message) {
         addMention(message);
     });
 
     function updateRoomState() {
-        var html = "";
+        var html = '';
         
-        if (Number(currentRoomState.emote_only) != 0) html += "Emote only<br>";
+        if (Number(currentRoomState.emote_only) != 0) html += 'Emote only<br>';
         
         var followers = Number(currentRoomState.followers_only);
-        if (followers == 0) html += "Followers only<br>";
-        else if (followers > 0) html += followers + "m followers only<br>";
+        if (followers == 0) html += 'Followers only<br>';
+        else if (followers > 0) html += followers + 'm followers only<br>';
         
-        if (Number(currentRoomState.r9k) != 0) html += "r9k mode<br>";
+        if (Number(currentRoomState.r9k) != 0) html += 'r9k mode<br>';
         
         var slow = Number(currentRoomState.slow);
-        if (slow > 0) html += slow + "s slow mode<br>";
+        if (slow > 0) html += slow + 's slow mode<br>';
 
-        if (Number(currentRoomState.subs_only) != 0) html += "Sub only mode<br>";
+        if (Number(currentRoomState.subs_only) != 0) html += 'Sub only mode<br>';
         
-        $("#roomstate").html(html);
+        $('#roomstate').html(html);
     }
     socket.on('roomstate', function (state) {
         currentRoomState = state;
@@ -211,7 +213,7 @@ $(function() { // On ready
 });
 
 function formatNumber(n) {
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function formatTime(date) {

@@ -24,8 +24,7 @@ $(function() { // On ready
 
     function createUser(user) {
         user.selected = false;
-        $('#botslist').append('<a class="list-group-item text-center botselect" id="bot-'+ user.login + '">' +
-            user.display_name +
+        $('#botslist').append('<a class="list-group-item text-center botselect" id="bot-'+ user.login + '"><b>' + user.display_name + '</b>' +
             '<span class="glyphicon glyphicon-ok" id="selected-' + user.login + '" aria-hidden="true" style="position: absolute; right: 6px; top: 12px"></span>' + // Selected span
             '<span id="followed-' + user.login + '" data-login="' + user.login + '" data-toggle="tooltip" data-placement="top" class="glyphicon glyphicon-heart" aria-hidden="true" style="position: absolute; right: 20px; top: 12px"></span>' + // Following span
             '</a>');

@@ -128,6 +128,7 @@ $(function() { // On ready
 
     socket.on('addbot', function (bot) {
         createUser(bot);
+        onSelectedChange();
     });
 
     $("#messagerange").on('change mousemove', function() {

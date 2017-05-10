@@ -317,7 +317,7 @@ io.on('connection', function(socket) {
 
 // Error handler
 app.use(function(req, res) { // 404 error
-    render(res, '404', {});
+    render(res.status(404), '404', {});
 });
 
 app.use(function(err, req, res, next) {

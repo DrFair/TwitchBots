@@ -90,7 +90,7 @@ app.set('view engine', '.ejs');
 // Public/resource folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-if (useLogin) require('./passport').init(app, logins);
+if (useLogin) require('./passport').init(app, io, logins);
 
 // Routes
 app.get('/', function(req, res) {
@@ -258,6 +258,7 @@ function addUser(login, token) {
 
 // Socket.io communication
 io.on('connection', function(socket) {
+    // console.log(socket.request.user);
     // console.log('Client connected');
     socket.on('sendmessage', function (data) {
         if (data.msg) {

@@ -1,16 +1,45 @@
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var passportSocketIo = require('passport.socketio');
 
-exports.init = function (expressApp, logins) {
+exports.init = function (expressApp, io, logins) {
 
     // Middleware
     expressApp.use(require('cookie-parser')());
     expressApp.use(require('body-parser').urlencoded({ extended: true }));
-    expressApp.use(require('express-session')({ secret: 'fair-twitch-bots-sec', resave: false, saveUninitialized: false })); // Secret should be generated?
+    var session = require('express-session');
+    // var FileStore = require('session-file-store')(session); // For some reason, file store does not work
+    var MemoryStore = require('express-session/session/memory');
+    var store = new MemoryStore();
+    expressApp.use(session({
+        store: store,
+        secret: 'fair-twitch-bots-sec', // Secret should be generated?
+        resave: false,
+        saveUninitialized: true
+    }));
     
     expressApp.use(require('connect-flash')());
     expressApp.use(passport.initialize());
     expressApp.use(passport.session());
+
+    // Socket io middleware
+    io.use(passportSocketIo.authorize({
+        key:          'connect.sid',
+        secret:       'fair-twitch-bots-sec',
+        store:        store,
+        success:      onAuthorizeSuccess,
+        fail:         onAuthorizeFail
+    }));
+
+    function onAuthorizeSuccess(req, accept) {
+        accept();
+    }
+    
+    function onAuthorizeFail(req, message, error, accept) {
+        if (req.user.logged_in) {
+            return accept();
+        }
+    }
 
     function findUser(username, callback) {
         for (var i = 0; i < logins.length; i++) {
@@ -40,8 +69,8 @@ exports.init = function (expressApp, logins) {
         callback(null, user.username);
     });
 
-    passport.deserializeUser(function(login, callback) {
-        findUser(login, function (user) {
+    passport.deserializeUser(function(username, callback) {
+        findUser(username, function (user) {
             callback(null, user);
         });
     });

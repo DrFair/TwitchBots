@@ -90,7 +90,6 @@ app.set('view engine', '.ejs');
 // Public/resource folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-console.log(logins);
 if (useLogin) require('./passport').init(app, io, logins);
 
 // Routes

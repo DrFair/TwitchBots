@@ -3,6 +3,9 @@ var LocalStrategy = require('passport-local').Strategy;
 var passportSocketIo = require('passport.socketio');
 
 exports.init = function (expressApp, io, logins) {
+    
+    var secret = 'fair-twitch-bots-sec'; // Should be generated?
+    var cookieSid = 'ftb.sid';
 
     // Middleware
     expressApp.use(require('cookie-parser')());
@@ -13,9 +16,10 @@ exports.init = function (expressApp, io, logins) {
     var store = new MemoryStore();
     expressApp.use(session({
         store: store,
-        secret: 'fair-twitch-bots-sec', // Secret should be generated?
+        secret: secret,
         resave: false,
-        saveUninitialized: true
+        saveUninitialized: true,
+        name: cookieSid
     }));
     
     expressApp.use(require('connect-flash')());
@@ -24,8 +28,8 @@ exports.init = function (expressApp, io, logins) {
 
     // Socket io middleware
     io.use(passportSocketIo.authorize({
-        key:          'connect.sid',
-        secret:       'fair-twitch-bots-sec',
+        key:          cookieSid,
+        secret:       secret,
         store:        store,
         success:      onAuthorizeSuccess,
         fail:         onAuthorizeFail

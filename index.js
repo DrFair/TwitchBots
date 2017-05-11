@@ -174,6 +174,7 @@ function getClientUser(user) {
 
 function render(res, view, data) {
     data.hostName = hostName;
+    data.useLogin = useLogin;
     res.render(view, data);
 }
 

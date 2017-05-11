@@ -41,23 +41,22 @@ exports.init = function (expressApp, io, logins) {
         }
     }
 
-    function findUser(username, callback) {
+    function findUser(login, callback) {
         for (var i = 0; i < logins.length; i++) {
-            if (logins[i].username === username) {
-                callback(logins[i]);
+            if (logins[i] === login) {
+                callback({ login: logins[i] });
                 return;
             }
         }
         callback(false);
     }
 
-    passport.use(new LocalStrategy( {},
+    passport.use(new LocalStrategy( {
+            usernameField: 'password' // Username is same as password, else it will say missing credentials
+        },
         function (username, password, callback) {
-            findUser(username, function (user) {
+            findUser(password, function (user) {
                 if (!user) {
-                    return callback(null, false, { message: 'Cannot find username' });
-                }
-                if (user.password !== password) {
                     return callback(null, false, { message: 'Incorrect password' });
                 }
                 return callback(null, user);
@@ -66,11 +65,11 @@ exports.init = function (expressApp, io, logins) {
     ));
 
     passport.serializeUser(function(user, callback) {
-        callback(null, user.username);
+        callback(null, user.login);
     });
 
-    passport.deserializeUser(function(username, callback) {
-        findUser(username, function (user) {
+    passport.deserializeUser(function(login, callback) {
+        findUser(login, function (user) {
             callback(null, user);
         });
     });

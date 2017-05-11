@@ -15,9 +15,15 @@ var userFile = 'users.json';
 var settingsFile = 'settings.json';
 
 var settingsData;
+var useLogin = false;
+var logins;
 if (fs.existsSync(settingsFile)) {
     settingsData = jsonFile.readFileSync(settingsFile);
     if (settingsData.defaultChannel) defaultChannel = settingsData.defaultChannel;
+    if (settingsData.logins && settingsData.logins.length > 0) {
+        useLogin = true;
+        logins = settingsData.logins;
+    }
 } else {
     console.log("Project missing " + settingsFile + " file.");
     process.exit(1);
@@ -80,8 +86,14 @@ app.set('view engine', '.ejs');
 // Public/resource folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+if (useLogin) require('./passport').init(app, logins);
+
 // Routes
 app.get('/', function(req, res) {
+    if (useLogin && !req.user) {
+        render(res, 'login', { loginError : req.flash('error') });
+        return;
+    }
     var data = [];
     for (var login in users) {
         data.push(users[login]);

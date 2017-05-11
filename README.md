@@ -57,3 +57,26 @@ The **users.json** is an array and must follow this template:
   ...
 ]
 ```
+
+## Logins
+
+Usage of the application can be protected by a login screen. To add logins, you have to add an array to your **settings.json** file like this:
+
+
+```
+{
+  ...
+  "app": {
+    ...
+  },
+  "logins": [
+    {
+      "username": "yourusername",
+      "password": "yourpassword"
+    },
+    ...
+  ]
+}
+```
+
+When logins are detected, you will meet a login screen before being able to interact with the bots automatically.

@@ -30,6 +30,10 @@ if (fs.existsSync(settingsFile)) {
 }
 
 var twitchApp = settingsData.app;
+if (twitchApp.redirect_uri === '/login' || twitchApp.redirect_uri === '/logout') {
+    console.log("App redirect_uri cannot be /login or /logout");
+    process.exit(1);
+}
 
 var users = [];
 var currentChannel = defaultChannel;

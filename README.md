@@ -70,11 +70,7 @@ Usage of the application can be protected by a login screen. To add logins, you 
     ...
   },
   "logins": [
-    {
-      "username": "yourusername",
-      "password": "yourpassword"
-    },
-    ...
+    "password1", "password2", ...
   ]
 }
 ```

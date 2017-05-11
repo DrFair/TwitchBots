@@ -6,8 +6,12 @@
   "author": "Mads Skovgaard <madsskovgaard@hotmail.com>",
   "license": "",
   "dependencies": {
+    "body-parser": "^1.17.1",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
     "ejs": "^2.5.6",
     "express": "^4.15.2",
+    "express-session": "^1.15.2",
     "fair-twitch": "^1.1.2",
     "irc": "^0.5.2",
     "jsonfile": "^3.0.0",

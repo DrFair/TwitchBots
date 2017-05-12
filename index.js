@@ -275,7 +275,7 @@ io.on('connection', function(socket) {
                 for (var i = 0; i < data.users.length; i++) {
                     var login = data.users[i];
                     var offset = data.seconds <= 0 ? 0 : Math.floor(Math.random() * data.seconds * 1000);
-                    var ejsMsg = ejs.render(data.msg, { bot: login }); // Render ejs
+                    var ejsMsg = ejs.render(data.msg, { login: login, display_name: users[login].display_name }); // Render ejs
                     if (ejsMsg.length > 0) {
                         (function (bot, msg) {
                             setTimeout(function () {

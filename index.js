@@ -119,6 +119,14 @@ app.get('/', function(req, res) {
     render(res, 'home', { authURL: authURL, msgTry: '<br> Examples:<br>My name is <%- bot %><br>Random number: <%- Math.floor(Math.random() * 100) %>' });
 });
 
+app.get('/help', function (req, res) {
+    if (useLogin && !req.user) {
+        render(res, 'login', { loginError : req.flash('error') });
+        return;
+    }
+    render(res, 'help', {});
+});
+
 app.get(authRoute, function(req, res) {
     if (req.query["code"] && req.query["state"]) { // Twitch authorization code
         if (req.query["state"] == uniqueState) {

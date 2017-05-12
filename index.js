@@ -116,7 +116,7 @@ app.get('/', function(req, res) {
         "&redirect_uri=" + twitchApp.redirect_uri +
         "&scope=" + scopes +
         "&state=" + uniqueState;
-    render(res, 'home', { authURL: authURL, msgTry: '<br> Examples:<br>My name is <%- bot %><br>Random number: <%- Math.floor(Math.random() * 100) %>' });
+    render(res, 'home', { authURL: authURL });
 });
 
 app.get('/help', function (req, res) {

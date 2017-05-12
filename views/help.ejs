@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <%- include("components/headerContent", { title: "Twitch Bots" }) %>
+    </head>
+    <body>
+        <nav class="nav navbar navbar-default">
+            <div class="container col-md-6 col-sm-8 center-block text-center">
+                <%- include("components/navbarHeader", { header: "Twitch Bots", imgSrc: null }) %>
+            </div>
+        </nav>
+        <div class="container content">
+            <div class="row">
+                <div class="col-md-6 col-sm-8 center-block text-center">
+                    <h3 class="page-header">Help</h3>
+                    <h4><b>Channels</b></h4>
+                    <p>At this moment, it's only possible to use the bots on one channel at a time. To change channel, type in the channel name under the change channel header, and press change. Once the channel is changed, you can then follow and send chat messages. Channel room states are shown below current channel tooltip (sub only mode etc).</p>
+                    <h4><b>Following</b></h4>
+                    <p>To follow the current channel, select the bots you wish to do it with on the left side, and click the follow button. A follow icon will then appear at the right side of bots to show you how long time followers they are.</p>
+                    <h4><b>Chat messages</b></h4>
+                    <p>To send a chat message, select the bots you wish to use on the left side, type in your chat message and press send. The wait timer is used for making bots randomly wait up to the selected amount of settings before sending the message. This is to prevent spam if you're planning to send messages from a lot of different bots at the same time.</p>
+                    <h4><b>EJS</b></h4>
+                    <p>It's possible to embed JavaScript inside the chat message input. The input sent to the server is rendered using <a href="https://www.npmjs.com/package/ejs" target="_blank" style="color: black; text-decoration: underline">EJS</a> before being sent to Twitch. The available variables are:</p>
+                    <p><b>login</b>: current bots login in lower case<br><b>display_name</b>: current bots display name</p>
+                    <p>Some examples of using embedded JavaScript:<br></p>
+                    <p><b>My name is <%- example1 %></b></p>
+                    <p><b>My name is <%- example2 %></b></p>
+                    <p>To test out EJS, you can use the official <a href="https://ionicabizau.github.io/ejs-playground/" target="_blank" style="color: black; text-decoration: underline">EJS Playground</a></p>
+                    <h4><b>Bot mentions</b></h4>
+                    <p>Any time a chat message in the current channel contains any of the bots usernames (case insensitive), the message will appear under bot mentions. This makes it easy to see if someone has mentioned any of your bots in the chat. The list can be cleared by pressing the clear mentions button.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <%- include("components/footer") %>
+
+        <%- include("components/scripts") %>
+    </body>
+</html>

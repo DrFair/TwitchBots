@@ -124,7 +124,7 @@ app.get('/help', function (req, res) {
         render(res, 'login', { loginError : req.flash('error') });
         return;
     }
-    render(res, 'help', {});
+    render(res, 'help', { example1: 'My name is <%- display_name %>', example2: 'Random number: <%- Math.floor(Math.random() * 100) %>' });
 });
 
 app.get(authRoute, function(req, res) {

@@ -76,3 +76,7 @@ Usage of the application can be protected by a login screen. To add logins, you 
 ```
 
 When logins are detected, you will meet a login screen before being able to interact with the bots automatically.
+
+## Screenshot
+
+![TwitchBots screenshot](http://i.imgur.com/wc9jafE.png)

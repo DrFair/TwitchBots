@@ -44,5 +44,7 @@ TwitchBots.iml
 
 # Project specific
 users.json
+usersbackup.json
 settings.json
 sessions
+.ftpconfig

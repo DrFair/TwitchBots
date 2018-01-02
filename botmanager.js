@@ -33,7 +33,8 @@ function BotManager(options, defaultChannel, ioSocket) {
         var msg = user.msg;
         var found = false;
         for (var i = 0; i < self.bots.length; i++) {
-          var index = user.msg.toLowerCase().indexOf(self.bots[i].login.toLowerCase());
+          var login = self.bots[i].login;
+          var index = user.msg.toLowerCase().indexOf(login.toLowerCase());
           if (index != -1) { // Found mention of login
              // Simple case insensitive replace all function
             msg = msg.replace(new RegExp(login, 'ig'), '<b>' + user.msg.substr(index, login.length) + '</b>');

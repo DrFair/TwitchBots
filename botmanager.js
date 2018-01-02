@@ -173,7 +173,7 @@ BotManager.prototype.followChannel = function (botLogins) {
   for (var i = 0; i < botLogins.length; i++) {
     var login = botLogins[i];
     var since = -1;
-    var bot = getBotByLogin(login);
+    var bot = self.getBotByLogin(login);
     if (bot != null) {
       // Find out if the bot is already following
       for (var j = 0; j < bot.followed.length; j++) {
@@ -197,9 +197,9 @@ BotManager.prototype.followChannel = function (botLogins) {
           since: new Date()
         });
       }
-      var clientBot = getClientBot(bot);
+      var clientBot = self.getClientBot(bot);
       followed.push({
-        login: clientBot,
+        login: clientBot.login,
         followed: clientBot.followed
       });
     }

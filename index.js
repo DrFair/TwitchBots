@@ -118,18 +118,18 @@ app.get('/help', function (req, res) {
 app.get(authRoute, function(req, res) {
     if (req.query["code"] && req.query["state"]) { // Twitch authorization code
         if (req.query["state"] == uniqueState) {
-            masterBot.getAuthToken(req.query["code"], uniqueState, (err, data) => {
+            manager.client.getAuthToken(req.query["code"], uniqueState, (err, data) => {
                 if (err) {
                     console.log('New Auth token error:');
                     console.log(err);
                 } else {
-                    masterBot.getOtherAuthSummary(data.access_token, (err, summary) => {
+                    manager.client.getOtherAuthSummary(data.access_token, (err, summary) => {
                         if (err) {
                             console.log('Auth token error:');
                             console.log(err);
                         } else {
                             if (summary.token.user_name) {
-                                addUser(summary.token.user_name, data.access_token);
+                                manager.addBot(summary.token.user_name, data.access_token);
                                 saveBots();
                                 console.log("Added user: " + summary.token.user_name + " with token: " + data.access_token);
                             }
